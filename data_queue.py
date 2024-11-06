@@ -50,10 +50,8 @@ def publish_alarm(alarm, client):
     result_json = json.dumps(alarm, default=str)  # Convert results to JSON string
     
     try:
-        print("before publishing")
         message_info = client.publish(ALARM_TOPIC, result_json)
         message_info.wait_for_publish(5)
-        print(message_info.is_published())
         print(f"Alarm published on topic \"{ALARM_TOPIC}\": {alarm}\n." )
     except:
         print(f"Alarm was not published successfully! \n")

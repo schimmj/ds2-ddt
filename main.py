@@ -21,8 +21,8 @@ def main():
         print("Exiting...")
         listener_client.loop_stop()  # Stop the MQTT listener
         listener_client.disconnect()
-        # sender_client.loop_stop()
-        # sender_client.disconnect()
+        sender_client.loop_stop()
+        sender_client.disconnect()
         
 
 

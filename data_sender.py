@@ -1,11 +1,13 @@
 import json
+import random
 import paho.mqtt.client as mqtt
 import time
 
 # Define the MQTT broker address and port
 BROKER_ADDRESS = "localhost"  # "mqtt-broker" when deploying instead of localhost
 BROKER_PORT = 1883
-TOPIC = "your/topic"
+WEATHER_TOPIC = "your/weather"
+TRAFFIC_TOPIC = "your/traffic"
 DATA_URL = "demo_data/weather_january.json"
 
 
@@ -32,10 +34,12 @@ with open(DATA_URL, 'r') as file:
 
 
 for item in data:
-    client.publish(TOPIC, json.dumps(item['metdata']))
-    print(f"Item sent to {TOPIC}: {item['metdata']}")
+    selected_topic = random.choice([WEATHER_TOPIC, TRAFFIC_TOPIC])
+    
+    client.publish(selected_topic, json.dumps(item['metdata']))
+    print(f"Item sent to {selected_topic}: {item['metdata']}")
 
-    time.sleep(3)
+    time.sleep(2)
 
 # close connection
 client.disconnect()

@@ -38,7 +38,7 @@ def handle_weather_messages(client, userdata, msg: MQTTMessage):
         userdata: User-defined data of any type.
         msg (MQTTMessage): The message object containing topic and payload.
     """
-    create_queue_or_add_message(msg, batch_size=10)
+    create_queue_or_add_message(msg, batch_size=5)
 
 def handle_traffic_messages(client, userdata, msg: MQTTMessage):
     """
@@ -51,7 +51,7 @@ def handle_traffic_messages(client, userdata, msg: MQTTMessage):
         userdata: User-defined data of any type.
         msg (MQTTMessage): The message object containing topic and payload.
     """
-    create_queue_or_add_message(msg, batch_size=20)
+    create_queue_or_add_message(msg, batch_size=5)
     
     
     

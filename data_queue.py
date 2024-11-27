@@ -21,6 +21,6 @@ class DataQueue:
             from mqtt_handler import MQTTHandler
             MQTTHandler.publish_alarm("Warning: Sensor is not sending anymore!")
         else:
-            df = pd.DataFrame(self.queue)
-            validation_results = validate_batch(df)
+            df: pd.DataFrame = pd.DataFrame(self.queue)
+            validation_results = validate_batch(df, self.topic)
         self.queue = []  # Clear the queue

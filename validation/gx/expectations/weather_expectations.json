@@ -1,0 +1,30 @@
+{
+  "expectations": [
+    {
+      "id": "846df556-fb37-4e88-bcdd-92491ec34002",
+      "kwargs": {
+        "column": "tavg",
+        "max_value": 40.0,
+        "min_value": -10.0
+      },
+      "meta": {},
+      "type": "expect_column_values_to_be_between"
+    },
+    {
+      "id": "7c7b5f19-c1c3-4697-8436-4a6360ebd2e2",
+      "kwargs": {
+        "column": "tx",
+        "max_value": 12.0,
+        "min_value": -6.0
+      },
+      "meta": {},
+      "type": "expect_column_values_to_be_between"
+    }
+  ],
+  "id": "35168213-86c1-43df-96bd-90a06158f7a4",
+  "meta": {
+    "great_expectations_version": "1.2.1"
+  },
+  "name": "weather_expectations",
+  "notes": null
+}

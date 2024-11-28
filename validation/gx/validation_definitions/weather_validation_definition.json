@@ -1,0 +1,22 @@
+{
+  "data": {
+    "asset": {
+      "id": "797875a4-babd-46cc-9bc7-13b7b4bd3026",
+      "name": "mqtt-data-asset"
+    },
+    "batch_definition": {
+      "id": "9b4d74e6-3cd7-4765-8f5e-74cab018bc02",
+      "name": "mqtt-batch"
+    },
+    "datasource": {
+      "id": "6b175a96-3303-4394-8003-dc3a12661379",
+      "name": "pandas-data-source"
+    }
+  },
+  "id": "f55a20b5-984c-4727-9d59-94d38f196a37",
+  "name": "weather_validation_definition",
+  "suite": {
+    "id": "35168213-86c1-43df-96bd-90a06158f7a4",
+    "name": "weather_expectations"
+  }
+}

@@ -1,0 +1,22 @@
+{
+  "data": {
+    "asset": {
+      "id": "797875a4-babd-46cc-9bc7-13b7b4bd3026",
+      "name": "mqtt-data-asset"
+    },
+    "batch_definition": {
+      "id": "9b4d74e6-3cd7-4765-8f5e-74cab018bc02",
+      "name": "mqtt-batch"
+    },
+    "datasource": {
+      "id": "6b175a96-3303-4394-8003-dc3a12661379",
+      "name": "pandas-data-source"
+    }
+  },
+  "id": "d2058862-f5fc-42a9-be2d-704bcd9e23f6",
+  "name": "traffic_validation_definition",
+  "suite": {
+    "id": "2b780729-0be5-4bc3-853a-f002fab8b216",
+    "name": "traffic_expectations"
+  }
+}

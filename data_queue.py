@@ -1,5 +1,5 @@
 import pandas as pd
-from gx.gx_validation import validate_batch
+from validation.gx_validation import validate_batch
 
 
 class DataQueue:

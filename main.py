@@ -16,8 +16,8 @@ import json
 # Configuration
 BROKER = "localhost"  # Address of the MQTT broker
 PORT = 1883           # Port to connect to the MQTT broker
-WEATHER_TOPIC = "your/weather"  # Topic for weather-related messages
-TRAFFIC_TOPIC = "your/traffic"  # Topic for traffic-related messages
+WEATHER_TOPIC = "weather"  # Topic for weather-related messages
+TRAFFIC_TOPIC = "traffic"  # Topic for traffic-related messages
 
 
 # Global variable for storing data queues
@@ -38,7 +38,7 @@ def handle_weather_messages(client, userdata, msg: MQTTMessage):
         userdata: User-defined data of any type.
         msg (MQTTMessage): The message object containing topic and payload.
     """
-    create_queue_or_add_message(msg, batch_size=5)
+    create_queue_or_add_message(msg, batch_size=10)
 
 def handle_traffic_messages(client, userdata, msg: MQTTMessage):
     """

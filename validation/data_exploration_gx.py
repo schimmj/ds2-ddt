@@ -35,7 +35,7 @@ batch_parameters = {"dataframe": metadata_df}
 
 # %%
 # Creating an Expectation Suite and adding it to the data context
-suite_name = "traffic_expectations"
+suite_name = "weather_expectations"
 suite = gx.ExpectationSuite(name=suite_name)
 suite = context.suites.add(suite)
 
@@ -48,7 +48,7 @@ suite.add_expectation(temperature_expectation)
 
 #%% 
 # Creating a Validation Definition
-definition_name = "traffic_validation_definition"
+definition_name = "weather_validation_definition"
 validation_definition = gx.ValidationDefinition(data=batch_definition, suite=suite, name=definition_name)
 validation_definition = context.validation_definitions.add(validation_definition)
 

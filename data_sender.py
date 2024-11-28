@@ -6,8 +6,8 @@ import time
 # Define the MQTT broker address and port
 BROKER_ADDRESS = "localhost"  # "mqtt-broker" when deploying instead of localhost
 BROKER_PORT = 1883
-WEATHER_TOPIC = "your/weather"
-TRAFFIC_TOPIC = "your/traffic"
+WEATHER_TOPIC = "weather"
+TRAFFIC_TOPIC = "traffic"
 DATA_URL = "demo_data/weather_january.json"
 
 
@@ -34,7 +34,8 @@ with open(DATA_URL, 'r') as file:
 
 
 for item in data:
-    selected_topic = random.choice([WEATHER_TOPIC, TRAFFIC_TOPIC])
+    # selected_topic = random.choice([WEATHER_TOPIC, TRAFFIC_TOPIC])
+    selected_topic = WEATHER_TOPIC
     
     client.publish(selected_topic, json.dumps(item['metdata']))
     print(f"Item sent to {selected_topic}: {item['metdata']}")

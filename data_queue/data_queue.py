@@ -1,5 +1,8 @@
 import pandas as pd
+import result_handler
 from validation.gx_validation import validate_batch
+from data_correction import DataCorrection
+from result_handler import ResultHandler
 
 
 class DataQueue:
@@ -8,6 +11,7 @@ class DataQueue:
         self.queue = []
         self.topic = topic
         self.batch_size = batch_size
+        self.resutl_handler = ResultHandler()
         
     def add(self, data):
         """Add data to the queue."""
@@ -18,9 +22,12 @@ class DataQueue:
     def process_batch(self):
         """Process and validate a batch of data."""
         if not self.queue:
-            from mqtt_handler import MQTTHandler
+            from mqtt.mqtt_handler import MQTTHandler
             MQTTHandler.publish_alarm("Warning: Sensor is not sending anymore!")
         else:
             df: pd.DataFrame = pd.DataFrame(self.queue)
             validation_results = validate_batch(df, self.topic)
+            
+            self.resutl_handler.handle_results(validation_results, df)
+            
         self.queue = []  # Clear the queue

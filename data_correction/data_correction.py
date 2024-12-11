@@ -1,0 +1,26 @@
+# data_correction.py
+
+from numpy import indices
+import pandas as pd
+from .correction_strategies import MissingValueImputation, SmoothingOutliers, CorrectionStrategy, get_strategy
+
+class DataCorrection:
+    def __init__(self):
+        """
+        Initialize with a dictionary mapping expectation types to correction strategies.
+        """
+   
+
+    def correct_column(self, column: pd.Series, expectation_type: str, result:dict, strategy_name:str):
+        """
+        Correct a single column based on the given expectation result and the strategy to use for correction.
+        
+        """
+
+        strategy: CorrectionStrategy = get_strategy(strategy_name)
+        corrected_column = column.copy()
+        indices_to_correct = result["result"]["partial_unexpected_index_list"]
+        for index in indices_to_correct:
+            corrected_column[index] = strategy.apply(self, index=index, neighbours=column)
+
+        return corrected_column

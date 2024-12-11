@@ -5,23 +5,29 @@ This script defines handlers for weather and traffic messages received via MQTT
 and processes these messages into topic-specific data queues for further handling.
 The MQTT broker connection is managed by the `MQTTHandler` class.
 """
-
+import os
 import time
 from typing import Callable, Dict, List
-from mqtt_handler import MQTTHandler
+from mqtt import MQTTHandler
 from data_queue import DataQueue
 from paho.mqtt.client import MQTTMessage
 import json
+from dotenv import load_dotenv
 
-# Configuration
-BROKER = "localhost"  # Address of the MQTT broker
-PORT = 1883           # Port to connect to the MQTT broker
-WEATHER_TOPIC = "weather"  # Topic for weather-related messages
-TRAFFIC_TOPIC = "traffic"  # Topic for traffic-related messages
+load_dotenv()
+
+# Configuration via environment variables
+BROKER = os.getenv("BROKER", "localhost")  # Address of the MQTT broker
+PORT = int(os.getenv("PORT", 1883))        # Port to connect to the MQTT broker
+WEATHER_TOPIC = os.getenv("WEATHER_TOPIC", "weather")  # Topic for weather-related messages
+TRAFFIC_TOPIC = os.getenv("TRAFFIC_TOPIC", "traffic")  # Topic for traffic-related messages
+
 
 
 # Global variable for storing data queues
 queues: List[DataQueue] = []
+
+
 
 
 
@@ -38,7 +44,7 @@ def handle_weather_messages(client, userdata, msg: MQTTMessage):
         userdata: User-defined data of any type.
         msg (MQTTMessage): The message object containing topic and payload.
     """
-    create_queue_or_add_message(msg, batch_size=10)
+    create_queue_or_add_message(msg, batch_size=48)
 
 def handle_traffic_messages(client, userdata, msg: MQTTMessage):
     """
@@ -99,6 +105,7 @@ def main():
         WEATHER_TOPIC: handle_weather_messages,
         TRAFFIC_TOPIC: handle_traffic_messages
     }
+
     
     # Initialize the MQTTHandler
     mqtt_handler = MQTTHandler(
@@ -106,6 +113,10 @@ def main():
         port=PORT,
         topic_handlers=topic_handlers
     )
+    
+    
+    
+    
 
     try:
         mqtt_handler.start()

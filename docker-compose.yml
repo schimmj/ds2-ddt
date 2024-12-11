@@ -1,22 +1,36 @@
-version: '3.8'
+version: "3.9"
 
 services:
   mqtt-broker:
-    image: eclipse-mosquitto:latest
+    image: mqtt-broker  # Assuming mqtt-broker image is already built and available
+    container_name: mqtt-broker
     ports:
-      - "1883:1883"  # MQTT port
+      - "1883:1883"  # Exposing MQTT port
     volumes:
-      - mosquitto_data:/mosquitto/data
-      - ./mosquitto.conf:/mosquitto/config/mosquitto.conf
+      - ../mqtt-broker/mosquitto.conf:/etc/mosquitto/mosquitto.conf  # Adjust path to mosquitto.conf
+    networks:
+      - mqtt-network
+    # Start Mosquitto broker and keep the container running
+    command: ["sh", "-c", "mosquitto -c /etc/mosquitto/mosquitto.conf && tail -f /dev/null"]
 
-  mqtt-listener:
-    build: .
-    volumes:
-      - ./data_sender.py:/app/data_sender.py
-      - ./error_listener.py:/app/error_listener.py
+  data-quality:
+    image: data-quality  # Assuming data-quality image is already built and available
+    container_name: data-quality
     depends_on:
-      - mqtt-broker
-    tty: true
+      - mqtt-broker  # Ensure this starts after mqtt-broker
+    environment:
+      BROKER: mqtt-broker  # Name of the mqtt-broker container
+      PORT: 1883
+      WEATHER_TOPIC: weather
+      TRAFFIC_TOPIC: traffic
+      WEATHER_TOPIC_VALIDATED: weather/validated
+      RESULT_HANDLER_CONFIG: result_handler/config.json
+    ports:
+      - "5000:5000"  # Exposing a port for the data-quality application, adjust as needed
+    networks:
+      - mqtt-network
+    command: ["python", "main.py"]
 
-volumes:
-  mosquitto_data:
+networks:
+  mqtt-network:
+    driver: bridge

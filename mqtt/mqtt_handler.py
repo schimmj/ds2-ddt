@@ -3,7 +3,7 @@ import time
 import threading
 from typing import Callable, Dict
 import paho.mqtt.client as mqtt
-from data_queue import DataQueue
+from data_queue.data_queue import DataQueue
 
 class MQTTHandler:
     TIMEOUT = 30  # Timeout for inactivity
@@ -31,9 +31,10 @@ class MQTTHandler:
         self.client.connect(self.broker, self.port)
         
         # Subscribe and add topic specific callbacks
-        for topic, handler in topic_handlers.items():
-            self.client.subscribe(topic)
-            self.client.message_callback_add(topic, handler)
+        if topic_handlers != None:
+            for topic, handler in topic_handlers.items():
+                self.client.subscribe(topic)
+                self.client.message_callback_add(topic, handler)
         
         
         
@@ -54,20 +55,20 @@ class MQTTHandler:
                 self.data_queue.process_batch()
             time.sleep(self.TIMEOUT / 2)
     
-    def publish_results(self, results):
+    def publish_results(self, results, publish_topic):
         """Publish validation results."""
         result_json = json.dumps(results, default=str)
-        message_info = self.client.publish(self.validation_topic, result_json)
-        published = message_info.wait_for_publish(5)
-        print(f"Validation results published: {published}")
+        message_info = self.client.publish(publish_topic, result_json)
+        message_info.wait_for_publish(5)
+        print(f"Validation results published on {publish_topic}")
     
-    def publish_alarm(self, alarm):
+    def publish_alarm(self, alarm, alarm_topic):
         """Publish an alarm message."""
         alarm_json = json.dumps(alarm, default=str)
         try:
-            message_info = self.client.publish(self.alarm_topic, alarm_json)
+            message_info = self.client.publish(alarm_topic, alarm_json)
             message_info.wait_for_publish(5)
-            print(f"Alarm published on topic \"{self.alarm_topic}\": {alarm}")
+            print(f"Alarm published on topic \"{alarm_topic}\": {alarm}")
         except Exception as e:
             print(f"Failed to publish alarm: {e}")
     

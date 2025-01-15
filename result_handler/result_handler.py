@@ -54,24 +54,39 @@ class ResultHandler:
                 corrected_data[column] = self.corrector.correct_column(
                     data_batch[column], expectation_type, result, handle_strategy
                 )
+                invalid_indices = result["result"]["partial_unexpected_index_list"]
+                for i in invalid_indices:
+                    self.raise_alarm(column, expectation_type, data_batch['time'][i] )
             elif handle_strategy == "RaiseAlarm":
-                self.raise_alarm(column, expectation_type)
+                #Demo purpose comment
+                # self.raise_alarm(column, expectation_type)
+                continue
             else:
                 print(f"No action configured for ({column}, {expectation_type})")
                 
         from mqtt.mqtt_handler import MQTTHandler
         
-        publisher = MQTTHandler(BROKER, PORT, topic_handlers=None)        
-        publisher.publish_results(results=corrected_data, publish_topic=PUBLISH_TOPIC_WEATHER)
+        publisher = MQTTHandler(BROKER, PORT, topic_handlers=None)
+        
+                   
+        for _, row in corrected_data.iterrows():
+            formatted_row = {
+                key: {
+                    "raw": data_batch.at[row.name, key],
+                    "cleaned": value
+                } if key!= "time" else value for key, value in row.items()
+            }
+            # Publish each row
+            publisher.publish_results(results=formatted_row, publish_topic=PUBLISH_TOPIC_WEATHER)
         print("Result published")
 
         return corrected_data
 
-    def raise_alarm(self, column: str, expectation_type: str):
+    def raise_alarm(self, column: str, expectation_type: str, time):
         """
         Raise an alarm for a specific column and expectation type.
         """
         from mqtt.mqtt_handler import MQTTHandler
         alarmer = MQTTHandler(BROKER, PORT, topic_handlers=None) 
-        alarmer.publish_alarm(alarm=f"ALARM: {expectation_type} raised for column '{column}'", alarm_topic= ALARM_TOPIC_WEATHER)
-        print(f"ALARM: {expectation_type} raised for column '{column}'")
+        alarmer.publish_alarm(alarm=f"ALARM: {expectation_type} raised for column '{column}' at time {time}", alarm_topic= ALARM_TOPIC_WEATHER)
+

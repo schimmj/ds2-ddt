@@ -101,6 +101,10 @@ def main():
     This function initializes the MQTTHandler with topic handlers for weather and traffic messages.
     It then starts the MQTT client and waits for incoming messages in an infinite loop.
     """
+    # print("Before")
+    # time.sleep(100)
+    # print("after time")
+    
     topic_handlers: Dict[str, Callable] = {
         WEATHER_TOPIC: handle_weather_messages,
         TRAFFIC_TOPIC: handle_traffic_messages

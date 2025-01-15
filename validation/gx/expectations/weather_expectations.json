@@ -164,7 +164,7 @@
       "id": "d3e0b7c1-c7e2-4eea-a88c-5b5892118b73",
       "kwargs": {
         "column": "ffavg",
-        "max_value": 22.1,
+        "max_value": 40.1,
         "min_value": 0.0
       },
       "meta": {},

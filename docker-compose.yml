@@ -26,7 +26,7 @@ services:
       WEATHER_TOPIC_VALIDATED: weather/validated
       RESULT_HANDLER_CONFIG: result_handler/config.json
     ports:
-      - "5000:5000"  # Exposing a port for the data-quality application, adjust as needed
+      - "5000:5000" 
     networks:
       - mqtt-network
     command: ["python", "main.py"]

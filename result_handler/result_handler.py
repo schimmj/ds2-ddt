@@ -4,6 +4,7 @@ from logging import config
 import pandas as pd
 import json
 import os
+import time
 from dotenv import load_dotenv
 
 from data_correction import DataCorrection, SmoothingOutliers, MissingValueImputation, is_valid_strategy
@@ -78,6 +79,7 @@ class ResultHandler:
             }
             # Publish each row
             publisher.publish_results(results=formatted_row, publish_topic=PUBLISH_TOPIC_WEATHER)
+            time.sleep(0.1)
         print("Result published")
 
         return corrected_data

@@ -1,17 +1,17 @@
 import json
 import time
-import threading
-from typing import Callable, Dict
+import yaml
+from typing import Callable, Dict, Any
 import paho.mqtt.client as mqtt
-from data_queue.data_queue import DataQueue
+from data_queue import DataQueue
+from config import ConfigLoader
 
 class MQTTHandler:
     TIMEOUT = 30  # Timeout for inactivity
     
     def __init__(self, 
                  broker: str, 
-                 port: int,
-                 topic_handlers: Dict[str, Callable]):
+                 port: int):
         """
         Initialize the MQTTHandler.
         
@@ -24,21 +24,37 @@ class MQTTHandler:
         """
         self.broker = broker
         self.port = port
-        
+        self.queues: Dict[str, DataQueue] = {}
+        self.config = ConfigLoader().load_config('mqtt_config.yaml')['topics']
         
         # Initialize MQTT client
         self.client = mqtt.Client(mqtt.CallbackAPIVersion.VERSION2)
         self.client.connect(self.broker, self.port)
         
-        # Subscribe and add topic specific callbacks
-        if topic_handlers != None:
-            for topic, handler in topic_handlers.items():
-                self.client.subscribe(topic)
-                self.client.message_callback_add(topic, handler)
-        
-        
-        
-
+        self._setup_subscriptions()
+            
+    def _setup_subscriptions(self):
+        for topic_name, topic_config in self.config.items():
+            # Create queue for topic
+            self.queues[topic_name] = DataQueue(topic_name,
+                batch_size=topic_config['batch_size']
+            )
+            # Subscribe to raw topic
+            sub_topic = topic_config['subscribe']
+            self.client.subscribe(sub_topic)
+            self.client.message_callback_add(
+                sub_topic,
+                lambda c, u, msg, t=topic_name: self._handle_message(msg, t)
+            )
+    
+    def _handle_message(self, msg, topic_name: str):
+        try:
+            data = json.loads(msg.payload)
+            queue = self.queues[topic_name]
+            config = self.config[topic_name]            
+            queue.add(data)
+        except Exception as e:
+            print(f"Error processing message: {e}")
     
     def start(self):
         """Start the MQTT client."""

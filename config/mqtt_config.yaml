@@ -1,0 +1,20 @@
+topics:
+  weather:
+    subscribe: "weather/raw"
+    publish:
+      validated: "weather/validated"
+      alarms: "weather/alarms"
+    batch_size: 48
+    variables:
+      - temperature
+      - humidity
+
+  traffic:
+    subscribe: "traffic/raw"
+    publish:
+      validated: "traffic/validated"
+      alarms: "traffic/alarms"
+    batch_size: 100
+    variables:
+      - vehicle_count
+      - speed

@@ -1,0 +1,14 @@
+validations:
+  weather:
+    temperature:
+      - rule: "expect_column_values_to_be_between"
+        params:
+          min_value: -50
+          max_value: 50
+        handler: "SmoothingOutliers"
+    humidity:
+      - rule: "expect_column_values_to_be_between"
+        params:
+          min_value: 0
+          max_value: 100
+        handler: "MissingValueImputation"

@@ -30,7 +30,6 @@ class ResultHandler:
         :param config_path: Path to the JSON configuration file.
         """
         load_dotenv()
-        print("Current Directory:", os.getcwd())
         with open(config_path, 'r') as config_file:
             self.config: dict = json.load(config_file)
         self.corrector = DataCorrection()

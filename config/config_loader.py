@@ -1,4 +1,4 @@
-import yaml
+import json
 from pathlib import Path
 from typing import Dict, Any, Union
 
@@ -11,28 +11,28 @@ class ConfigLoader:
 
     def load_config(self, filename: str) -> Dict[str, Any]:
         """
-        Load configuration from a YAML file.
+        Load configuration from a JSON file.
         
         Args:
-            filename: Name of the config file (e.g., 'mqtt_config.yaml')
+            filename: Name of the config file (e.g., 'mqtt_config.json')
             
         Returns:
             Dict containing the configuration
             
         Raises:
             FileNotFoundError: If config file doesn't exist
-            yaml.YAMLError: If config file is invalid YAML
+            json.JSONDecodeError: If config file is invalid JSON
         """
         config_path = self.base_path / filename
         
         if not config_path.exists():
-            raise FileNotFoundError(f"Config file {filename} not found in {self.base_path}")
+            raise FileNotFoundError(f"Config file {filename} not found in {self.base_path}") 
             
-        if not filename.endswith('.yaml') and not filename.endswith('.yml'):
-            raise ValueError("Config file must be a YAML file")
+        if not filename.endswith('.json'):
+            raise ValueError("Config file must be a JSON file")
             
         try:
             with open(config_path, 'r') as f:
-                return yaml.safe_load(f)
-        except yaml.YAMLError as e:
-            raise yaml.YAMLError(f"Error parsing {filename}: {str(e)}")
+                return json.load(f)
+        except json.JSONDecodeError as e:
+            raise json.JSONDecodeError(f"Error parsing {filename}: {str(e)}")

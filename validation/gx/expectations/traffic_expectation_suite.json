@@ -1,0 +1,28 @@
+{
+  "expectations": [
+    {
+      "id": "6e47a7db-6d43-4272-96b6-b781257cfd3c",
+      "kwargs": {
+        "column_A": "speed",
+        "column_B": "acceleration"
+      },
+      "meta": {},
+      "type": "expect_column_pair_values_to_be_equal"
+    },
+    {
+      "id": "49106b7d-1ad6-444d-98c0-4301964fd95e",
+      "kwargs": {
+        "column_A": "acceleration",
+        "column_B": "speed"
+      },
+      "meta": {},
+      "type": "expect_column_pair_values_to_be_equal"
+    }
+  ],
+  "id": "e45ba865-93ef-4e5a-a408-41ea929ec04d",
+  "meta": {
+    "great_expectations_version": "1.2.1"
+  },
+  "name": "traffic_expectation_suite",
+  "notes": null
+}

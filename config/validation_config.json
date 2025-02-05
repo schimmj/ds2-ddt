@@ -1,0 +1,59 @@
+{
+  "validations": {
+    "weather": {
+      "tavg": [
+        {
+          "rule": "expect_column_values_to_be_between",
+          "params": {
+            "column": "tavg",
+            "min_value": -20,
+            "max_value": 50
+          },
+          "handler": "SmoothingOutliers"
+        },
+        {
+          "rule": "expect_column_values_to_be_between",
+          "params": {
+            "column": "tavg",
+            "min_value": -20,
+            "max_value": 79
+          },
+          "handler": "RaiseAlarm"
+        }
+      ],
+      "tx": [
+        {
+          "rule": "expect_column_values_to_be_between",
+          "params": {
+            "column": "tx",
+            "min_value": 0,
+            "max_value": 13
+          },
+          "handler": "RaiseAlarm"
+        }
+      ]
+    },
+    "traffic": {
+      "speed": [
+        {
+          "rule": "expect_column_pair_values_to_be_equal",
+          "params": {
+            "column_A": "speed",
+            "column_B": "acceleration"
+          },
+          "handler": "SmoothingOutliers"
+        }
+      ],
+      "acceleration": [
+        {
+          "rule": "expect_column_pair_values_to_be_equal",
+          "params": {
+            "column_A": "acceleration",
+            "column_B": "speed"
+          },
+          "handler": "MissingValueImputation"
+        }
+      ]
+    }
+  }
+}

@@ -21,7 +21,7 @@ def validate_batch(df: pd.DataFrame, topic):
         
         
     # Run the validation definition with the batch parameters
-    validation_result = validation_definition.run(batch_parameters=batch_parameters)
+    validation_result = validation_definition.run(batch_parameters=batch_parameters, result_format="BASIC")
     
     print(validation_result)
     

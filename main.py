@@ -13,6 +13,7 @@ from data_queue import DataQueue
 from paho.mqtt.client import MQTTMessage
 import json
 from dotenv import load_dotenv
+from validation import GXInitializer
 
 load_dotenv()
 
@@ -28,6 +29,7 @@ def main():
     It then starts the MQTT client and waits for incoming messages in an infinite loop.
     """
     mqtt_handler = MQTTHandler(BROKER, PORT)
+    gx_initializer = GXInitializer()
     
     try:
         mqtt_handler.start()

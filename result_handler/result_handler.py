@@ -6,7 +6,7 @@ import json
 import os
 import time
 from dotenv import load_dotenv
-
+from config import ConfigLoader
 from data_correction import DataCorrection, SmoothingOutliers, MissingValueImputation, is_valid_strategy
 
 load_dotenv()
@@ -14,25 +14,25 @@ load_dotenv()
 # Configuration via environment variables
 BROKER = os.getenv("BROKER", "localhost")  # Address of the MQTT broker
 PORT = int(os.getenv("PORT", 1883))        # Port to connect to the MQTT broker
-PUBLISH_TOPIC_WEATHER =os.getenv("WEATHER_TOPIC_VALIDATED", "weather/validated")
-ALARM_TOPIC_WEATHER = os.getenv("WEATHER_TOPIC_ALARM")
 
 class ResultHandler:
     """
     Handles validation results by applying corrections or raising alarms
     based on a configurable set of strategies.
     """
-
-    def __init__(self, config_path: str = "result_handler/config.json"):
+    def __init__(self):
         """
         Initialize the ResultHandler.
 
         :param config_path: Path to the JSON configuration file.
+        :param mqtt_config_path: Path to the MQTT configuration JSON file.
         """
-        load_dotenv()
-        with open(config_path, 'r') as config_file:
-            self.config: dict = json.load(config_file)
+        load_dotenv()        
+        self.mqtt_config = ConfigLoader().load_config("mqtt_config.json")
+        self.validation_config = ConfigLoader().load_config("validation_config.json")
         self.corrector = DataCorrection()
+        
+        
 
     def handle_results(self, validation_results: dict, data_batch: pd.DataFrame) -> pd.DataFrame:
         """
@@ -43,44 +43,17 @@ class ResultHandler:
         :return: A corrected DataFrame.
         """
         corrected_data = data_batch.copy()
+        expectation_position = 0
+        prev_column = None
 
         for result in validation_results["results"]:
             column = result["expectation_config"]["kwargs"]["column"]
-            expectation_type = result["expectation_config"]["type"]
-
-            handle_strategy = self.config.get(column, {}).get(expectation_type)
-
-            if is_valid_strategy(handle_strategy):
-                corrected_data[column] = self.corrector.correct_column(
-                    data_batch[column], expectation_type, result, handle_strategy
-                )
-                invalid_indices = result["result"]["partial_unexpected_index_list"]
-                for i in invalid_indices:
-                    self.raise_alarm(column, expectation_type, data_batch['time'][i] )
-            elif handle_strategy == "RaiseAlarm":
-                #Demo purpose comment
-                # self.raise_alarm(column, expectation_type)
-                continue
+            if prev_column == column:
+                expectation_position += 1
             else:
-                print(f"No action configured for ({column}, {expectation_type})")
-                
-        from mqtt.mqtt_handler import MQTTHandler
-        
-        publisher = MQTTHandler(BROKER, PORT, topic_handlers=None)
-        
-                   
-        for _, row in corrected_data.iterrows():
-            formatted_row = {
-                key: {
-                    "raw": data_batch.at[row.name, key],
-                    "cleaned": value
-                } if key!= "time" else value for key, value in row.items()
-            }
-            # Publish each row
-            publisher.publish_results(results=formatted_row, publish_topic=PUBLISH_TOPIC_WEATHER)
-            time.sleep(0.1)
-        print("Result published")
-
+                expectation_position = 0
+            result_handler = self.validation_config["validations"][column][expectation_position]
+            print(f"Result handler: {result_handler}")
         return corrected_data
 
     def raise_alarm(self, column: str, expectation_type: str, time):

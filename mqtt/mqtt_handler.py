@@ -1,6 +1,5 @@
 import json
 import time
-import yaml
 from typing import Callable, Dict, Any
 import paho.mqtt.client as mqtt
 from data_queue import DataQueue
@@ -25,7 +24,7 @@ class MQTTHandler:
         self.broker = broker
         self.port = port
         self.queues: Dict[str, DataQueue] = {}
-        self.config = ConfigLoader().load_config('mqtt_config.yaml')['topics']
+        self.config = ConfigLoader().load_config('mqtt_config.json')['topics']
         
         # Initialize MQTT client
         self.client = mqtt.Client(mqtt.CallbackAPIVersion.VERSION2)
@@ -51,8 +50,9 @@ class MQTTHandler:
         try:
             data = json.loads(msg.payload)
             queue = self.queues[topic_name]
-            config = self.config[topic_name]            
+            config = self.config[topic_name]        
             queue.add(data)
+            print(f"Message received on topic \"{topic_name}\": {data} at position {len(queue.queue)}")
         except Exception as e:
             print(f"Error processing message: {e}")
     

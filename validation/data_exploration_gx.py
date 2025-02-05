@@ -59,3 +59,5 @@ validation_definition = context.validation_definitions.add(validation_definition
 # Run the validation and print it
 validation_result = validation_definition.run(batch_parameters=batch_parameters)
 print(validation_result)
+
+# %%

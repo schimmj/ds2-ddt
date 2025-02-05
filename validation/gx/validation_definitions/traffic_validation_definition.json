@@ -13,10 +13,10 @@
       "name": "pandas-data-source"
     }
   },
-  "id": "8fb37482-bd88-4af1-a3b4-4c44ba4456e0",
-  "name": "weather_validation_definition",
+  "id": "f2781db3-ce3d-4810-a301-d8421622aa71",
+  "name": "traffic_validation_definition",
   "suite": {
-    "id": "a89f13a5-8d92-43c2-baf5-409f30962d8b",
-    "name": "weather_expectation_suite"
+    "id": "e45ba865-93ef-4e5a-a408-41ea929ec04d",
+    "name": "traffic_expectation_suite"
   }
 }

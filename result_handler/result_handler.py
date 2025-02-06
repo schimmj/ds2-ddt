@@ -67,15 +67,42 @@ class ResultHandler:
                     )
                 else:
                     self.raise_alarm_per_row(column, result, data_batch)
-                    
-        from mqtt.mqtt_handler import MQTTHandler
-        sender = MQTTHandler(BROKER, PORT)     
-        sender.publish_results(self.topic, corrected_data) 
+        
+        self.publish_result_per_row(corrected_data, data_batch)                    
+        
         return corrected_data
     
     
     
 
+
+    def publish_result_per_row(self, corrected_data: pd.DataFrame, data_batch: pd.DataFrame):
+        """
+        This function takes corrected data and the original data from data_batch DataFrame,
+        and sends each row as a separate result using the MQTTHandler sender.
+
+        :param corrected_data: DataFrame with corrected data (cleaned values)
+        :param data_batch: DataFrame with the original data (raw values)
+        :param mqtt_handler: An instance of the MQTTHandler sender to send the data
+        """
+        from mqtt.mqtt_handler import MQTTHandler
+        sender = MQTTHandler(BROKER, PORT)   
+        for idx, row in corrected_data.iterrows():
+            # Extract the corresponding raw data from the data_batch (original data)
+            raw_row = data_batch.loc[idx]
+            
+            # Initialize the message dictionary
+            message = {"time": row.get("time")}  # Assuming 'time' column exists in both DataFrames
+
+            # Loop through each column (except 'time') and create the raw/cleaned pair
+            for column in corrected_data.columns:
+                if column != "time":  # Skip the time column, it's handled separately
+                    message[column] = {
+                        "raw": raw_row.get(column),
+                        "cleaned": row.get(column)
+                    }
+                      
+            sender.publish_results(initial_topic=self.topic, results=message) 
     
 
     def raise_alarm_per_row(self, column: str, result, data_batch: pd.DataFrame):

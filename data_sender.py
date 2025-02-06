@@ -45,7 +45,7 @@ for item in data:
     client.publish(selected_topic, json.dumps(item))
     print(f"Item sent to {selected_topic}: {item}")
 
-    time.sleep(2)
+    time.sleep(1)
 
 # close connection
 client.disconnect()

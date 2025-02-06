@@ -83,15 +83,15 @@ data_docs_sites:
 fluent_datasources:
   pandas-data-source:
     type: pandas
-    id: b47c18da-6258-411c-85ac-d47d63b8b870
+    id: 84f3a694-f1c3-4216-98ff-040effe66acd
     assets:
       mqtt-data-asset:
         type: dataframe
-        id: 074588db-9309-41cd-b3bf-e846d1e3c4b3
+        id: b8e24bb7-5507-49c4-8f1f-58d6399f27d5
         batch_metadata: {}
         batch_definitions:
           mqtt-batch:
-            id: 55f16155-18f8-45ce-b6c1-8afcada90ee8
+            id: 2c0d120b-ad96-4ed6-929f-4656464777d7
             partitioner:
 analytics_enabled:
-data_context_id: e2211be2-ac95-4c3b-83c4-fe2b1a1e12e5
+data_context_id: 13143ef6-911b-4035-b6c8-59780c257ef7

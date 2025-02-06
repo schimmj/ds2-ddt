@@ -11,7 +11,7 @@ class DataQueue:
         self.queue = []
         self.topic = topic
         self.batch_size = batch_size
-        self.resutl_handler = ResultHandler()
+        self.resutl_handler = ResultHandler(topic)
         
     def add(self, data):
         """Add data to the queue."""

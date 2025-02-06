@@ -11,7 +11,7 @@ class DataCorrection:
         """
    
 
-    def correct_column(self, column: pd.Series, expectation_type: str, result:dict, strategy_name:str):
+    def correct_column(self, column: pd.Series, rows_to_correct:dict, strategy_name:str):
         """
         Correct a single column based on the given expectation result and the strategy to use for correction.
         
@@ -19,8 +19,7 @@ class DataCorrection:
 
         strategy: CorrectionStrategy = get_strategy(strategy_name)
         corrected_column = column.copy()
-        indices_to_correct = result["result"]["partial_unexpected_index_list"]
-        for index in indices_to_correct:
+        for index in rows_to_correct:
             corrected_column[index] = strategy.apply(self, index=index, neighbours=column)
 
         return corrected_column

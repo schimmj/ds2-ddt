@@ -14,7 +14,7 @@ TOPIC = sys.argv[1]
 
 # Callback function to handle incoming messages
 def on_message(client, userdata, msg):
-    print(f"Message received on topic '{msg.topic}': {msg.payload.decode()}")
+    print(f"Message received on topic '{msg.topic}': \n {msg.payload.decode()}")
 
 # MQTT Client initialization
 client = mqtt.Client()

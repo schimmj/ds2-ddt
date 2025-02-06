@@ -1,7 +1,7 @@
 {
   "expectations": [
     {
-      "id": "6e47a7db-6d43-4272-96b6-b781257cfd3c",
+      "id": "bfce3158-47f3-4755-b540-d6018e98408d",
       "kwargs": {
         "column_A": "speed",
         "column_B": "acceleration"
@@ -10,7 +10,7 @@
       "type": "expect_column_pair_values_to_be_equal"
     },
     {
-      "id": "49106b7d-1ad6-444d-98c0-4301964fd95e",
+      "id": "1eacac37-9d6f-4409-a2ce-357a5a57cc74",
       "kwargs": {
         "column_A": "acceleration",
         "column_B": "speed"
@@ -19,7 +19,7 @@
       "type": "expect_column_pair_values_to_be_equal"
     }
   ],
-  "id": "e45ba865-93ef-4e5a-a408-41ea929ec04d",
+  "id": "d1d2ce88-154b-45ed-96cd-054122173bf5",
   "meta": {
     "great_expectations_version": "1.2.1"
   },

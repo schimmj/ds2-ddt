@@ -24,7 +24,7 @@ class MQTTHandler:
         self.broker = broker
         self.port = port
         self.queues: Dict[str, DataQueue] = {}
-        self.config = ConfigLoader().load_config('mqtt_config.json')['topics']
+        self.config = ConfigLoader().load_config('generated_mqtt_config.json')['topics']
         
         # Initialize MQTT client
         self.client = mqtt.Client(mqtt.CallbackAPIVersion.VERSION2)
@@ -71,40 +71,18 @@ class MQTTHandler:
                 self.data_queue.process_batch()
             time.sleep(self.TIMEOUT / 2)
     
-    def publish_results(self, initial_topic, results):
-        """Publish validation results."""
-        
-        # Find the corresponding validation topic
-        for topic, details in self.config.items():
-            if topic == initial_topic:
-                validated_topic = details["publish"]["validated"]
-                break
-        else:
-            raise ValueError(f"No alarm topic found for initial topic: {initial_topic}")
-        
+    def publish_results(self, validated_topic, results):
+        """Publish validation results to the provided validated topic."""
         result_json = json.dumps(results, default=str)
         message_info = self.client.publish(validated_topic, result_json)
         message_info.wait_for_publish(5)
         
         
     
-    def publish_alarm(self, initial_topic, message):
+    def publish_alarm(self, alarm_topic, message):
         """
-        Publish an alarm message to the corresponding alarm topic.
-
-        :param initial_topic: The initial topic for which the alarm is raised.
-        :param message: The alarm message to be published.
+        Publish an alarm message to the provided alarm topic.
         """
-
-        # Find the corresponding alarm topic
-        for topic, details in self.config.items():
-            if topic == initial_topic:
-                alarm_topic = details["publish"]["alarms"]
-                break
-        else:
-            raise ValueError(f"No alarm topic found for initial topic: {initial_topic}")
-
-        # Publish the alarm message
         self.client.publish(alarm_topic, "Alarm: " + message)
     
     def stop(self):

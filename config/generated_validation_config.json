@@ -1,0 +1,43 @@
+{
+  "validations": {
+    "air_quality_hourly": {
+      "so2": [],
+      "co": [
+        {
+          "rule": "expect_column_values_to_be_between",
+          "params": {
+            "column": "co",
+            "min_value": 0.2,
+            "max_value": 0.5
+          },
+          "handler": "SmoothingOutliers"
+        }
+      ],
+      "o3": [
+        {
+          "rule": "expect_column_values_to_not_be_null",
+          "params": {
+            "column": "o3"
+          },
+          "handler": "RaisAlarm"
+        }
+      ],
+      "no2": [
+        {
+          "rule": "expect_column_values_to_be_between",
+          "params": {
+            "column": "no2",
+            "min_value": 20,
+            "max_value": 60,
+            "strict_min": "true",
+            "strict_max": "true"
+          },
+          "handler": "RaisAlarm"
+        }
+      ],
+      "pm10": [],
+      "pm25": [],
+      "benzene": []
+    }
+  }
+}

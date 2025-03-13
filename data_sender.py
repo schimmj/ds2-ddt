@@ -8,7 +8,8 @@ import sys
 BROKER_ADDRESS = "localhost"  # "mqtt-broker" when deploying instead of localhost
 BROKER_PORT = 1883
 
-DATA_URL = "demo_data/formatted_weather.json"
+WEATHER_DATA_PATH = "demo_data/formatted_weather.json"
+AIR_QUALITY_DATA_PATH = "demo_data/air-quality-hourly.json"
 
 # Check if the topic was provided as a command-line argument
 if len(sys.argv) != 2:
@@ -33,7 +34,7 @@ except:
 
 print("=" * 80 + "\n")
 
-with open(DATA_URL, 'r') as file:
+with open(AIR_QUALITY_DATA_PATH, 'r') as file:
     data = json.load(file)
 
 
@@ -45,7 +46,7 @@ for item in data:
     client.publish(selected_topic, json.dumps(item))
     print(f"Item sent to {selected_topic}: {item}")
 
-    time.sleep(1)
+    time.sleep(0.2)
 
 # close connection
 client.disconnect()

@@ -1,0 +1,21 @@
+{
+  "topics": {
+    "air_quality_hourly": {
+      "subscribe": "/air-quality/hourly",
+      "publish": {
+        "validated": "/air-quality/hourly/validated",
+        "alarm": "/air-quality/hourly/alarm"
+      },
+      "batch_size": 30,
+      "variables": [
+        "so2",
+        "co",
+        "o3",
+        "no2",
+        "pm10",
+        "pm25",
+        "benzene"
+      ]
+    }
+  }
+}

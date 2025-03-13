@@ -40,5 +40,6 @@ def main():
         print("Exiting...")
         mqtt_handler.stop()
 
+
 if __name__ == "__main__":
     main()

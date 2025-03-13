@@ -10,7 +10,7 @@ import shutil
 class GXInitializer:
     def __init__(self, gx_root_dir: str = './validation'):
         self.gx_root_dir = gx_root_dir
-        self.config_name = 'validation_config.json'
+        self.config_name = 'generated_validation_config.json'
         self.context = None
         self.suites: Dict[str, gx.ExpectationSuite] = {}
         self.validation_definitions: Dict[str, gx.ValidationDefinition]  = {}

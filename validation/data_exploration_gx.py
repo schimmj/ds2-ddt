@@ -41,16 +41,19 @@ suite = context.suites.add(suite)
 
 #%% 
 # Creating an Expectation and adding it to the suite
-temperature_expectation = gx.expectations.ExpectColumnStdevToBeBetween(column='tavg', min_value=-5, max_value=20)
-suite.add_expectation(temperature_expectation)
-
+# temperature_expectation = gx.expectations.ExpectColumnValuesToBeBetween(column='tavg', min_value='-2', max_value='20')
+hints = gx.expectations.ExpectColumnValuesToBeBetween.__annotations__
+print(hints)
+# suite.add_expectation(temperature_expectation)
+# help(gx.expectations.ExpectColumnStdevToBeBetween)
 
 
 #%% 
 # Creating a Validation Definition
 definition_name = "weather_validation_definition"
 validation_definition = gx.ValidationDefinition(data=batch_definition, suite=suite, name=definition_name)
-validation_definition = context.validation_definitions.add(validation_definition)
+
+
 
 
 

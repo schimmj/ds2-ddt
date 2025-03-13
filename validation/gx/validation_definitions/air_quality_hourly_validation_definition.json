@@ -1,0 +1,22 @@
+{
+  "data": {
+    "asset": {
+      "id": "05614d2a-8e0d-4761-a855-564b5474e700",
+      "name": "mqtt-data-asset"
+    },
+    "batch_definition": {
+      "id": "05a9ac7a-7df4-46f7-8d0c-053d961d96d3",
+      "name": "mqtt-batch"
+    },
+    "datasource": {
+      "id": "0993eebf-b5b8-449a-bd5e-f854edbd25f7",
+      "name": "pandas-data-source"
+    }
+  },
+  "id": "5916e168-be6d-4fb4-bac1-7407673d897a",
+  "name": "air_quality_hourly_validation_definition",
+  "suite": {
+    "id": "2ba76748-cb1b-4808-a2fa-2164447c88bc",
+    "name": "air_quality_hourly_expectation_suite"
+  }
+}

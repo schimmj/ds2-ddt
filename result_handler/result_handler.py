@@ -29,8 +29,8 @@ class ResultHandler:
         :param mqtt_config_path: Path to the MQTT configuration JSON file.
         """
         load_dotenv()        
-        self.mqtt_config = ConfigLoader().load_config("mqtt_config.json")
-        self.validation_config = ConfigLoader().load_config("validation_config.json")
+        self.mqtt_config = ConfigLoader().load_config("generated_mqtt_config.json")
+        self.validation_config = ConfigLoader().load_config("generated_validation_config.json")
         self.corrector = DataCorrection()
         self.topic = topic
         
@@ -57,16 +57,19 @@ class ResultHandler:
             prev_column = column
             
             if not result['success']:
-                handling_strategy = self.validation_config["validations"][self.topic][column][expectation_position]['handler']
-                print(f"Result handler: {handling_strategy}")
-                if is_valid_strategy(handling_strategy):
-                    corrected_data[column] = self.corrector.correct_column(
-                        column=corrected_data[column],
-                        rows_to_correct=result['result']['unexpected_index_list'],
-                        strategy_name=handling_strategy
-                    )
+                handling_strategy = self.validation_config["validations"][self.topic][column][expectation_position].get('handler')
+                
+                if handling_strategy is None:
+                    continue
                 else:
-                    self.raise_alarm_per_row(column, result, data_batch)
+                    if is_valid_strategy(handling_strategy):
+                        corrected_data[column] = self.corrector.correct_column(
+                            column=corrected_data[column],
+                            rows_to_correct=result['result']['unexpected_index_list'],
+                            strategy_name=handling_strategy
+                        )
+                    else:
+                        self.raise_alarm_per_row(column, result, data_batch)
         
         self.publish_result_per_row(corrected_data, data_batch)                    
         
@@ -92,17 +95,16 @@ class ResultHandler:
             raw_row = data_batch.loc[idx]
             
             # Initialize the message dictionary
-            message = {"time": row.get("time")}  # Assuming 'time' column exists in both DataFrames
+            message = {}
 
-            # Loop through each column (except 'time') and create the raw/cleaned pair
+            # Loop through each column and create the raw/cleaned pair
             for column in corrected_data.columns:
-                if column != "time":  # Skip the time column, it's handled separately
-                    message[column] = {
-                        "raw": raw_row.get(column),
-                        "cleaned": row.get(column)
-                    }
+                message[column] = {
+                    "raw": raw_row.get(column),
+                    "cleaned": row.get(column)
+                }
                       
-            sender.publish_results(initial_topic=self.topic, results=message) 
+            sender.publish_results(validated_topic=self.mqtt_config['topics'][self.topic]["publish"]["validated"],results=message)
     
 
     def raise_alarm_per_row(self, column: str, result, data_batch: pd.DataFrame):
@@ -116,9 +118,8 @@ class ResultHandler:
         unexpected_values = result["result"]["unexpected_list"]
         
         for index, value in zip(unexpected_index_list, unexpected_values):
-            time = data_batch.iloc[index]["time"]
-            alarm_message = f"An {expectation_type} expectation occured at {time}: Attribute: {column}, Value: {value}"
-            alarmer.publish_alarm(initial_topic=self.topic, message=alarm_message)
+            alarm_message = f"An {expectation_type} expectation occured at {data_batch.loc[index]}: Attribute: {column}, Value: {value}"
+            alarmer.publish_alarm(alarm_topic=self.mqtt_config['topics'][self.topic]["publish"]["alarm"],message=alarm_message)
         
         
         

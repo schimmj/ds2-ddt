@@ -1,9 +1,5 @@
 """
 Module for handling MQTT messages and processing them into queues.
-
-This script defines handlers for weather and traffic messages received via MQTT
-and processes these messages into topic-specific data queues for further handling.
-The MQTT broker connection is managed by the `MQTTHandler` class.
 """
 import os
 import time
@@ -24,9 +20,6 @@ PORT = int(os.getenv("PORT", 1883))        # Port to connect to the MQTT broker
 def main():
     """
     Main function to start the MQTT client and process incoming messages.
-
-    This function initializes the MQTTHandler with topic handlers for weather and traffic messages.
-    It then starts the MQTT client and waits for incoming messages in an infinite loop.
     """
     mqtt_handler = MQTTHandler(BROKER, PORT)
     gx_initializer = GXInitializer()

@@ -4,10 +4,14 @@
       "subscribe": "/air-quality/hourly",
       "publish": {
         "validated": "/air-quality/hourly/validated",
-        "alarm": "/air-quality/hourly/alarm"
+        "alarm": "'/air-quality/hourly/alarm'"
       },
       "batch_size": 30,
       "variables": [
+        "stationId",
+        "stationName",
+        "dateFrom",
+        "dateTo",
         "so2",
         "co",
         "o3",
@@ -15,6 +19,18 @@
         "pm10",
         "pm25",
         "benzene"
+      ]
+    },
+    "iot-data": {
+      "subscribe": "/iot-data",
+      "publish": {
+        "validated": "/iot-data/validated",
+        "alarm": "/iot-data/alarm"
+      },
+      "batch_size": 20,
+      "variables": [
+        "temperature",
+        "airPressure"
       ]
     }
   }

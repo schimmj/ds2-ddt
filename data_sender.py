@@ -1,44 +1,54 @@
 #!/usr/bin/env python3
-"""data_sender_flexible.py
+"""data_sender.py
 
 Publish each element of a JSON array to an MQTT topic.
 
-This is a drop‑in replacement for the original *data_sender.py* that let you
-specify **any** input file at runtime (plus a few other niceties):
+Now supports reading the broker host and port from a `.env` file that
+lives in the *same directory* as this script.  Expected variables::
 
-```
-python data_sender_flexible.py my/topic -f path/to/file.json \
-    --broker mqtt.example.com --port 1883 --delay 0.1
-```
+    MQTT_BROKER=broker.example.com
+    MQTT_PORT=1883
 
-Arguments
----------
-* **topic** (positional) – MQTT topic to publish to.
-* **-f / --file** – path to JSON file (default: demo_data/air-quality-hourly.json).
-* **--broker** – MQTT broker hostname/IP (default: localhost).
-* **--port** – broker port (default: 1883).
-* **--delay** – seconds to wait between messages (default: 0.2).
-
-The script exits with a non‑zero status code if it can’t read the file, if the
-file doesn’t contain a top‑level list, or if it can’t connect to the broker.
+Command‑line options still take precedence; if neither the CLI nor the
+.env file provides a value we fall back to the hard‑coded defaults
+(localhost / 1883).
 """
+
 from __future__ import annotations
 
 import argparse
 import json
+import os
 import sys
 import time
 from pathlib import Path
 
 import paho.mqtt.client as mqtt
 
+try:
+    # Optional dependency; fall back gracefully if not installed
+    from dotenv import load_dotenv  # type: ignore
+except ImportError:  # pragma: no cover
+    load_dotenv = None  # type: ignore
+
 # ---------------------------------------------------------------------------
-# Defaults
+# Environment defaults
 # ---------------------------------------------------------------------------
-DEFAULT_BROKER_ADDRESS = "localhost"
-DEFAULT_BROKER_PORT = 1883
+
+# Load .env from the script's directory (if python‑dotenv is available)
+if load_dotenv is not None:
+    env_file = Path(__file__).with_name(".env")
+    if env_file.exists():
+        load_dotenv(env_file)
+
+DEFAULT_BROKER_ADDRESS = os.getenv("BROKER", "localhost")
+try:
+    DEFAULT_BROKER_PORT = int(os.getenv("PORT", 1883))
+except ValueError:  # pragma: no cover – invalid int in env
+    DEFAULT_BROKER_PORT = 1883
+
 DEFAULT_DATA_PATH = "demo_data/air-quality-hourly.json"
-DEFAULT_DELAY = 0.2  # seconds
+DEFAULT_DELAY = 1  # seconds
 
 # ---------------------------------------------------------------------------
 # Argument parsing
@@ -91,6 +101,7 @@ def parse_args() -> argparse.Namespace:  # noqa: D401 – *returns* Namespace
 # ---------------------------------------------------------------------------
 
 def main() -> None:  # noqa: D401 – imperative mood
+    print(DEFAULT_BROKER_ADDRESS, DEFAULT_BROKER_PORT)
     args = parse_args()
 
     # 1. Connect to broker ---------------------------------------------------
@@ -99,7 +110,7 @@ def main() -> None:  # noqa: D401 – imperative mood
         client.connect(args.broker, args.port, keepalive=60)
         print(f"✓ Connected to MQTT broker at {args.broker}:{args.port}")
     except Exception as exc:  # pragma: no cover – connection failure
-        print(f"✗ Could not connect to broker: {exc}", file=sys.stderr)
+        print(f"✗ Could not connect to broker({args.broker}): {exc}", file=sys.stderr)
         sys.exit(1)
 
     # 2. Load JSON data ------------------------------------------------------

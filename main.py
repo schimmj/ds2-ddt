@@ -26,7 +26,7 @@ def main():
     
     try:
         mqtt_handler.start()
-        print("MQTT client running. Press Ctrl+C to exit.")
+        print(f"MQTT client running connected to {BROKER}:{PORT}. Press Ctrl+C to exit.")
         while True:
             time.sleep(1)  # Keep the main thread alive
     except KeyboardInterrupt:

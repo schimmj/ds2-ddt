@@ -1,65 +1,102 @@
 {
   "validations": {
-    "air_quality_hourly": {
-      "stationId": [
+    "iot_data": {
+      "id": [
         {
           "rule": "expect_column_values_to_not_be_null",
           "params": {
-            "column": "stationId"
+            "column": "id"
           },
           "handler": "RaisAlarm"
         }
       ],
-      "stationName": [
+      "sensorId": [
         {
           "rule": "expect_column_values_to_not_be_null",
           "params": {
-            "column": "stationName"
+            "column": "sensorId"
           },
           "handler": "RaisAlarm"
         }
       ],
-      "dateFrom": [],
-      "dateTo": [],
-      "so2": [
+      "sensorName": [
         {
-          "rule": "expect_column_values_to_be_between",
+          "rule": "expect_column_values_to_not_be_null",
           "params": {
-            "column": "so2",
-            "min_value": 10,
-            "max_value": 20
-          },
-          "handler": "SmoothingOutliers"
+            "column": "sensorName"
+          }
         }
       ],
-      "co": [],
-      "o3": [],
-      "no2": [],
-      "pm10": [],
-      "pm25": [],
-      "benzene": []
-    },
-    "iot-data": {
+      "sensorDisplayname": [],
+      "active": [],
+      "organizationId": [],
+      "organizationName": [],
+      "suborganizationId": [],
+      "suborganizationName": [],
+      "dateCaptured": [],
+      "yearCaptured": [],
+      "monthCaptured": [],
+      "dayCaptured": [],
+      "dateCreated": [],
+      "yearCreated": [],
+      "monthCreated": [],
+      "dayCreated": [],
       "temperature": [
         {
           "rule": "expect_column_values_to_be_between",
           "params": {
             "column": "temperature",
             "min_value": 0,
-            "max_value": 35,
-            "strict_min": true,
-            "strict_max": "true"
+            "max_value": 20
+          }
+        }
+      ],
+      "airPressure": [],
+      "humidity": [
+        {
+          "rule": "expect_column_values_to_be_between",
+          "params": {
+            "column": "humidity",
+            "min_value": 45,
+            "max_value": 90
+          }
+        }
+      ],
+      "soilMoisture": [],
+      "leafWetness": [],
+      "batteryLevel": [],
+      "status": []
+    },
+    "air_quality": {
+      "co": [
+        {
+          "rule": "expect_column_values_to_be_between",
+          "params": {
+            "column": "co",
+            "min_value": 0.2,
+            "max_value": 2.3
           },
           "handler": "SmoothingOutliers"
         }
       ],
-      "airPressure": [
+      "no2": [
         {
           "rule": "expect_column_values_to_be_between",
           "params": {
-            "column": "airPressure",
-            "min_value": 990,
-            "max_value": 1010
+            "column": "no2",
+            "min_value": 2,
+            "max_value": 35,
+            "strict_min": true,
+            "strict_max": false
+          },
+          "handler": "SmoothingOutliers"
+        }
+      ],
+      "o3": [
+        {
+          "rule": "expect_column_values_to_not_be_null",
+          "params": {
+            "column": "o3"
           },
           "handler": "RaisAlarm"
         }

@@ -3,6 +3,9 @@ import os
 from dotenv import load_dotenv
 from config import ConfigLoader
 from data_correction import DataCorrection, is_valid_strategy
+import time
+import json
+
 
 load_dotenv()
 
@@ -53,30 +56,41 @@ class ResultHandler:
                             strategy_name=handling_strategy
                         )
                     else:
+                        None
                         self.raise_alarm_per_row(column, result, data_batch)
 
         self.publish_result_per_row(corrected_data, data_batch)
         return corrected_data
 
     def publish_result_per_row(self, corrected_data: pd.DataFrame, data_batch: pd.DataFrame):
-        """
-        Publish each row's raw and corrected data via MQTT.
-        """
-        # Import MQTTHandler here to avoid circular dependencies.
-        from mqtt.mqtt_handler import MQTTHandler
-        sender = MQTTHandler(BROKER, PORT)
-        for idx, row in corrected_data.iterrows():
-            raw_row = data_batch.loc[idx]
-            message = {}
-            # Build a message with both raw and cleaned values
-            for column in corrected_data.columns:
-                message[column] = {
-                    "raw": raw_row.get(column),
-                    "cleaned": row.get(column)
-                }
-            validated_topic = self.mqtt_config['topics'][self.topic]["publish"]["validated"]
-            sender.publish_results(validated_topic=validated_topic, results=message)
+            """
+            Publish each row's raw and corrected data via MQTT.
 
+            """
+            # Import MQTTHandler here to avoid circular dependencies.
+            from mqtt.mqtt_handler import MQTTHandler
+
+            sender = MQTTHandler(BROKER, PORT)
+            validated_topic = self.mqtt_config['topics'][self.topic]["publish"]["validated"]
+
+            for idx, row in corrected_data.iterrows():
+                raw_row = data_batch.loc[idx]
+                message: dict[str, object] = {}
+
+                # Flatten: attribute.raw and attribute.cleaned
+                for column in corrected_data.columns:
+                    raw_val = raw_row.get(column)
+                    cleaned_val = row.get(column)
+                    
+                    if raw_val is not None:
+                        message[f"{column}.raw"] = raw_val
+                    if cleaned_val is not None:
+                        message[f"{column}.cleaned"] = cleaned_val
+
+                print(f"Published to {validated_topic}: {message}")
+                sender.publish_results(validated_topic=validated_topic, results=message)
+                time.sleep(1)
+                
     def raise_alarm_per_row(self, column: str, result, data_batch: pd.DataFrame):
         """
         Raise an alarm for each invalid data point in a specific column.
@@ -89,9 +103,13 @@ class ResultHandler:
 
         for index, value in zip(unexpected_index_list, unexpected_values):
             raw_data = data_batch.loc[index]
-            alarm_message = (
-                f"An {expectation_type} expectation occurred at {raw_data}: "
-                f"Attribute: {column}, Value: {value}"
-            )
+            alarm_message = {
+                "type": column,  # Use the column name as the type
+                "severity": "CRITICAL",  # Set severity to CRITICAL
+                "message": f"An {expectation_type} expectation occurred at {raw_data}: "
+                        f"Attribute: {column}, Value: {value}"
+            }
+            alarm_message_json = json.dumps(alarm_message)
             alarm_topic = self.mqtt_config['topics'][self.topic]["publish"]["alarm"]
-            alarmer.publish_alarm(alarm_topic=alarm_topic, message=alarm_message)
+            print(f"Alarm raised on {alarm_topic}: {alarm_message}")
+            alarmer.publish_alarm(alarm_topic=alarm_topic, message=alarm_message_json)

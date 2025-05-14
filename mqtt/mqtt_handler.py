@@ -52,7 +52,8 @@ class MQTTHandler:
         message_info.wait_for_publish(5)
     
     def publish_alarm(self, alarm_topic, message):
-        self.client.publish(alarm_topic, "Alarm: " + message)
+        message_info = self.client.publish(alarm_topic, message)
+        message_info.wait_for_publish(5)
     
     def stop(self):
         """Stop the MQTT client loop and disconnect from the broker."""

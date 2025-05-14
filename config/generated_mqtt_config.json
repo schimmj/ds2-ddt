@@ -1,36 +1,50 @@
 {
   "topics": {
-    "air_quality_hourly": {
-      "subscribe": "/air-quality/hourly",
-      "publish": {
-        "validated": "/air-quality/hourly/validated",
-        "alarm": "'/air-quality/hourly/alarm'"
-      },
-      "batch_size": 30,
-      "variables": [
-        "stationId",
-        "stationName",
-        "dateFrom",
-        "dateTo",
-        "so2",
-        "co",
-        "o3",
-        "no2",
-        "pm10",
-        "pm25",
-        "benzene"
-      ]
-    },
-    "iot-data": {
+    "iot_data": {
       "subscribe": "/iot-data",
       "publish": {
-        "validated": "/iot-data/validated",
-        "alarm": "/iot-data/alarm"
+        "validated": "te/device/iot-data/measurements",
+        "alarm": "te/device/iot-data/alarm"
       },
       "batch_size": 20,
       "variables": [
+        "id",
+        "sensorId",
+        "sensorName",
+        "sensorDisplayname",
+        "active",
+        "organizationId",
+        "organizationName",
+        "suborganizationId",
+        "suborganizationName",
+        "dateCaptured",
+        "yearCaptured",
+        "monthCaptured",
+        "dayCaptured",
+        "dateCreated",
+        "yearCreated",
+        "monthCreated",
+        "dayCreated",
         "temperature",
-        "airPressure"
+        "airPressure",
+        "humidity",
+        "soilMoisture",
+        "leafWetness",
+        "batteryLevel",
+        "status"
+      ]
+    },
+    "air_quality": {
+      "subscribe": "/air-quality",
+      "publish": {
+        "validated": "te/device/air-quality/measurements",
+        "alarm": "te/device/air-quality/alarm"
+      },
+      "batch_size": 25,
+      "variables": [
+        "co",
+        "no2",
+        "o3"
       ]
     }
   }

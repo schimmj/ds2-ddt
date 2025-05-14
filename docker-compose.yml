@@ -1,36 +1,32 @@
-version: "3.9"
-
 services:
   mqtt-broker:
-    image: mqtt-broker  # Assuming mqtt-broker image is already built and available
+    image: eclipse-mosquitto:latest
     container_name: mqtt-broker
     ports:
-      - "1883:1883"  # Exposing MQTT port
+      - "1884:1883"  # Expose MQTT port
     volumes:
-      - ../mqtt-broker/mosquitto.conf:/etc/mosquitto/mosquitto.conf  # Adjust path to mosquitto.conf
+      - ./mosquitto.conf:/mosquitto/config/mosquitto.conf  # Mount custom Mosquitto config
     networks:
-      - mqtt-network
-    # Start Mosquitto broker and keep the container running
-    command: ["sh", "-c", "mosquitto -c /etc/mosquitto/mosquitto.conf && tail -f /dev/null"]
+      - app-network
 
   data-quality:
-    image: data-quality  # Assuming data-quality image is already built and available
+    build:
+      context: .
+      dockerfile: Dockerfile
     container_name: data-quality
     depends_on:
-      - mqtt-broker  # Ensure this starts after mqtt-broker
+      - mqtt-broker
     environment:
-      BROKER: mqtt-broker  # Name of the mqtt-broker container
+      BROKER: mqtt-broker
       PORT: 1883
-      WEATHER_TOPIC: weather
-      TRAFFIC_TOPIC: traffic
-      WEATHER_TOPIC_VALIDATED: weather/validated
-      RESULT_HANDLER_CONFIG: result_handler/config.json
+    volumes:
+      - ./config:/app/config  # Mount config directory for manual edits
+      - ./.env:/app/.env:ro # Mount .env file as read-only
     ports:
-      - "5000:5000" 
+      - "5000:5000"  # Expose any additional ports if needed
     networks:
-      - mqtt-network
-    command: ["python", "main.py"]
+      - app-network
 
 networks:
-  mqtt-network:
+  app-network:
     driver: bridge

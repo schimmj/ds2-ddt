@@ -39,7 +39,7 @@ except ImportError:  # pragma: no cover
 if load_dotenv is not None:
     env_file = Path(__file__).with_name(".env")
     if env_file.exists():
-        load_dotenv(env_file)
+        load_dotenv(env_file, override=True)
 
 DEFAULT_BROKER_ADDRESS = os.getenv("BROKER", "localhost")
 try:

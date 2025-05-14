@@ -3,15 +3,11 @@ Module for handling MQTT messages and processing them into queues.
 """
 import os
 import time
-from typing import Callable, Dict, List
-from mqtt import MQTTHandler
-from data_queue import DataQueue
-from paho.mqtt.client import MQTTMessage
-import json
+from mqtt import MqttClient, MqttPublisher, TopicRouter 
 from dotenv import load_dotenv
 from validation import GXInitializer
 
-load_dotenv()
+load_dotenv(override=True)
 
 # Configuration via environment variables
 BROKER = os.getenv("BROKER", "localhost")  # Address of the MQTT broker
@@ -21,17 +17,24 @@ def main():
     """
     Main function to start the MQTT client and process incoming messages.
     """
-    mqtt_handler = MQTTHandler(BROKER, PORT)
     gx_initializer = GXInitializer()
     
+    
+    client  = MqttClient(broker=BROKER, port=PORT)
+    router  = TopicRouter(client)                       # creates pipelines
+    publisher = MqttPublisher(client)                   # hand same client to RH
+
+    # # tell *every* newly‑created ResultHandler to use the shared publisher
+    # BatchPipeline.set_default_publisher(publisher.publish)  # tiny helper class‑method
+
+    client.start()
     try:
-        mqtt_handler.start()
-        print(f"MQTT client running connected to {BROKER}:{PORT}. Press Ctrl+C to exit.")
-        while True:
-            time.sleep(1)  # Keep the main thread alive
+        while True: time.sleep(1)
     except KeyboardInterrupt:
-        print("Exiting...")
-        mqtt_handler.stop()
+        client.stop()
+
+
+
 
 
 if __name__ == "__main__":

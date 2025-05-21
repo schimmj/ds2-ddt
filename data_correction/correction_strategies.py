@@ -54,6 +54,9 @@ class SmoothingOutliers(CorrectionStrategy):
 def is_valid_strategy(strategy_name):
     """Check if a strategy name exists in the CorrectionStrategyEnum."""
     return strategy_name in CorrectionStrategyEnum._member_names_
+  
+
+
 
 
 def get_strategy(strategy_name):

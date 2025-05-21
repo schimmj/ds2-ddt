@@ -1,115 +1,104 @@
+"""
+ResultHandler
+=============
+
+Coordinates three independent concerns:
+
+1. **CorrectionEngine**  –– turns validation results + original DataFrame
+   into a cleaned DataFrame **and** a list of alarm‑worthy failures.
+
+2. **AlarmPublisher**    –– converts each alarm event into an outbound
+   message via the *shared* publish‑callable.
+
+3. **ResultPublisher**   –– row‑wise flattens the cleaned data and publishes
+   it (also via the shared publish‑callable).
+
+The network layer is injected once, globally, via
+`ResultHandler.set_default_publisher()`.  BatchPipeline therefore needs no
+knowledge of MQTT.
+"""
+from __future__ import annotations
+
+from typing import Callable, List, Tuple
+
 import pandas as pd
-import os
-from dotenv import load_dotenv
-from config import ConfigLoader
-from data_correction import DataCorrection, is_valid_strategy
-import time
-import json
 
+from data_correction import CorrectionEngine
+from .alarm_publisher import AlarmPublisher
+from .result_publisher  import ResultPublisher
+from config import ConfigProvider
+from data_correction import DataCorrection
 
-load_dotenv()
-
-BROKER = os.getenv("BROKER", "localhost") 
-PORT = int(os.getenv("PORT", 1883))       
 
 class ResultHandler:
-    """
-    Processes validation results by applying corrections or raising alarms 
-    based on configured strategies.
-    """
-    def __init__(self, topic: str):
+    """Orchestrates correction + publishing; owns no I/O of its own."""
 
-        self.mqtt_config = ConfigLoader().load_config("generated_mqtt_config.json")
-        self.validation_config = ConfigLoader().load_config("generated_validation_config.json")
-        self.corrector = DataCorrection()
-        self.topic = topic
+    _default_publish: Callable[[str, dict], None] | None = None   # class‑level
 
-    def handle_results(self, validation_results: dict, data_batch: pd.DataFrame) -> pd.DataFrame:
+    # --------------------------------------------------------------------- #
+    #  class helpers
+    # --------------------------------------------------------------------- #
+    @classmethod
+    def set_default_publisher(cls, fn: Callable[[str, dict], None]) -> None:
+        """Register a process‑wide publish‑callable (e.g. MqttPublisher.publish)."""
+        cls._default_publish = fn
+
+
+
+    def __init__(self, topic: str, cfg: ConfigProvider | None = None, publish: Callable[[str, dict], None] | None = None) -> None:
         """
-        Process validation results:
-         - Apply corrections for invalid data.
-         - Raise alarms when necessary.
-        Returns the corrected DataFrame.
+        Parameters
+        ----------
+        topic
+            Logical sensor/topic name (must exist in both mqtt + validation configs).
+        cfg
+            Optional ConfigProvider instance.  If omitted, a default provider
+            is created – it caches JSON so the cost is negligible.
+        publish
+            Optional call‑back `(mqtt_topic: str, obj: dict) -> None`.
+            If *None*, the class‑level default set via `set_default_publisher`
+            will be used.
         """
-        corrected_data = data_batch.copy()
-        expectation_position = 0  # Track multiple expectations for the same column.
-        prev_column = None
+        cfg = cfg or ConfigProvider()
 
-        # Iterate over each validation result.
-        for result in validation_results["results"]:
-            column = result["expectation_config"]["kwargs"]["column"]
-            if prev_column == column:
-                expectation_position += 1
-            else:
-                expectation_position = 0
-            prev_column = column
+        # network layer ---------------------------------------------------- #
+        publish = publish or ResultHandler._default_publish
+        if publish is None:
+            raise RuntimeError(
+                "ResultHandler needs a publish‑callable, but none was provided "
+                "and no default is registered.  "
+                "Call ResultHandler.set_default_publisher() in main.py."
+            )
 
-            if not result['success']:
-                handling_strategy = self.validation_config["validations"][self.topic][column][expectation_position].get('handler')
-                if handling_strategy is None:
-                    continue  # Skip if no strategy
-                else:
-                    if is_valid_strategy(handling_strategy):
-                        corrected_data[column] = self.corrector.correct_column(
-                            column=corrected_data[column],
-                            rows_to_correct=result['result']['unexpected_index_list'],
-                            strategy_name=handling_strategy
-                        )
-                    else:
-                        None
-                        self.raise_alarm_per_row(column, result, data_batch)
+        # domain engines --------------------------------------------------- #
+        topic_cfg = cfg.mqtt()["topics"][topic]
 
-        self.publish_result_per_row(corrected_data, data_batch)
-        return corrected_data
+        self._engine  = CorrectionEngine(topic, cfg, DataCorrection())
+        self._alarms  = AlarmPublisher(topic_cfg, publish)
+        self._results = ResultPublisher(topic_cfg, publish)
 
-    def publish_result_per_row(self, corrected_data: pd.DataFrame, data_batch: pd.DataFrame):
-            """
-            Publish each row's raw and corrected data via MQTT.
-
-            """
-            # Import MQTTHandler here to avoid circular dependencies.
-            from mqtt.mqtt_handler import MQTTHandler
-
-            sender = MQTTHandler(BROKER, PORT)
-            validated_topic = self.mqtt_config['topics'][self.topic]["publish"]["validated"]
-
-            for idx, row in corrected_data.iterrows():
-                raw_row = data_batch.loc[idx]
-                message: dict[str, object] = {}
-
-                # Flatten: attribute.raw and attribute.cleaned
-                for column in corrected_data.columns:
-                    raw_val = raw_row.get(column)
-                    cleaned_val = row.get(column)
-                    
-                    if raw_val is not None:
-                        message[f"{column}.raw"] = raw_val
-                    if cleaned_val is not None:
-                        message[f"{column}.cleaned"] = cleaned_val
-
-                print(f"Published to {validated_topic}: {message}")
-                sender.publish_results(validated_topic=validated_topic, results=message)
-                time.sleep(1)
-                
-    def raise_alarm_per_row(self, column: str, result, data_batch: pd.DataFrame):
+    # --------------------------------------------------------------------- #
+    #  public API
+    # --------------------------------------------------------------------- #
+    def handle(
+        self,
+        validation_results: dict,
+        df: pd.DataFrame
+    ) -> pd.DataFrame:
         """
-        Raise an alarm for each invalid data point in a specific column.
-        """
-        from mqtt.mqtt_handler import MQTTHandler
-        alarmer = MQTTHandler(BROKER, PORT)
-        expectation_type = result["expectation_config"]["type"]
-        unexpected_index_list = result["result"]["unexpected_index_list"]
-        unexpected_values = result["result"]["unexpected_list"]
+        Apply corrections, raise alarms, publish cleaned data.
 
-        for index, value in zip(unexpected_index_list, unexpected_values):
-            raw_data = data_batch.loc[index]
-            alarm_message = {
-                "type": column,  # Use the column name as the type
-                "severity": "CRITICAL",  # Set severity to CRITICAL
-                "message": f"An {expectation_type} expectation occurred at {raw_data}: "
-                        f"Attribute: {column}, Value: {value}"
-            }
-            alarm_message_json = json.dumps(alarm_message)
-            alarm_topic = self.mqtt_config['topics'][self.topic]["publish"]["alarm"]
-            print(f"Alarm raised on {alarm_topic}: {alarm_message}")
-            alarmer.publish_alarm(alarm_topic=alarm_topic, message=alarm_message_json)
+        Returns
+        -------
+        pd.DataFrame
+            The cleaned DataFrame (also returned by `CorrectionEngine`).
+        """
+        cleaned_df, alarm_events = self._engine.run(validation_results, df)
+
+        # --- alarms first ------------------------------------------------- #
+        for column, res in alarm_events:
+            self._alarms.emit(column, res, df)
+
+        # --- publish cleaned rows ---------------------------------------- #
+        self._results.emit(cleaned_df, df)
+        return cleaned_df

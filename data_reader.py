@@ -16,6 +16,7 @@ import argparse
 import os
 import sys
 from pathlib import Path
+from paho.mqtt.enums import CallbackAPIVersion
 
 import paho.mqtt.client as mqtt
 
@@ -84,7 +85,7 @@ def on_message(_: mqtt.Client, __, msg: mqtt.MQTTMessage) -> None:  # noqa: D401
 def main() -> None:  # noqa: D401 – imperative
     args = parse_args()
 
-    client = mqtt.Client(mqtt.CallbackAPIVersion.VERSION2)
+    client = mqtt.Client(CallbackAPIVersion.VERSION2)
     client.on_message = on_message
 
     try:
@@ -95,7 +96,7 @@ def main() -> None:  # noqa: D401 – imperative
         sys.exit(1)
 
     client.subscribe(args.topic)
-    print(f"Listening on topic '{args.topic}'. Press Ctrl+C to quit.")
+    print(f"Listening on topic {args.topic}. Press Ctrl+C to quit.")
 
     try:
         client.loop_forever()

@@ -98,7 +98,7 @@
           "params": {
             "column": "o3"
           },
-          "handler": "RaisAlarm"
+          "handler": "RaiseAlarm"
         }
       ]
     }

@@ -10,7 +10,6 @@ class BatchPipeline:
     def __init__(self, topic: str, batch_size: int):
         self.validator = BatchValidator(topic)
         self.result_handler = ResultHandler(topic)
-        # DataQueue will call self._process() whenever a batch is full
         self.queue = DataQueue(batch_size, self._process)
 
     # external API: just forward rows to the queue
@@ -20,4 +19,4 @@ class BatchPipeline:
     # internal callback
     def _process(self, df: pd.DataFrame) -> None:
         validation_results = self.validator(df)
-        self.result_handler.handle_results(validation_results, df)
+        self.result_handler.handle(validation_results, df)

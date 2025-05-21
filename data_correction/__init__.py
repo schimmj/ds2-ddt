@@ -1,3 +1,4 @@
 # data_correction/__init__.py
 from .data_correction import DataCorrection
-from .correction_strategies import CorrectionStrategyEnum, is_valid_strategy,CorrectionStrategy,MissingValueImputation,SmoothingOutliers, get_strategy
+from .correction_strategies import CorrectionStrategyEnum, is_valid_strategy, CorrectionStrategy,MissingValueImputation,SmoothingOutliers, get_strategy
+from .correction_engine import CorrectionEngine

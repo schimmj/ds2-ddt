@@ -5,7 +5,9 @@ import os
 import time
 from mqtt import MqttClient, MqttPublisher, TopicRouter 
 from dotenv import load_dotenv
+from result_handler import ResultHandler
 from validation import GXInitializer
+import paho.mqtt.client as mqtt
 
 load_dotenv(override=True)
 
@@ -18,16 +20,17 @@ def main():
     Main function to start the MQTT client and process incoming messages.
     """
     gx_initializer = GXInitializer()
-    
+            
     
     client  = MqttClient(broker=BROKER, port=PORT)
-    router  = TopicRouter(client)                       # creates pipelines
     publisher = MqttPublisher(client)                   # hand same client to RH
-
     # # tell *every* newly‑created ResultHandler to use the shared publisher
-    # BatchPipeline.set_default_publisher(publisher.publish)  # tiny helper class‑method
+    ResultHandler.set_default_publisher(publisher.publish)
+    
+    router  = TopicRouter(client)                       # creates pipelines
 
-    client.start()
+
+
     try:
         while True: time.sleep(1)
     except KeyboardInterrupt:

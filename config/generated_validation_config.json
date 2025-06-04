@@ -6,27 +6,11 @@
           "rule": "expect_column_values_to_not_be_null",
           "params": {
             "column": "id"
-          },
-          "handler": "RaisAlarm"
-        }
-      ],
-      "sensorId": [
-        {
-          "rule": "expect_column_values_to_not_be_null",
-          "params": {
-            "column": "sensorId"
-          },
-          "handler": "RaisAlarm"
-        }
-      ],
-      "sensorName": [
-        {
-          "rule": "expect_column_values_to_not_be_null",
-          "params": {
-            "column": "sensorName"
           }
         }
       ],
+      "sensorId": [],
+      "sensorName": [],
       "sensorDisplayname": [],
       "active": [],
       "organizationId": [],
@@ -41,27 +25,9 @@
       "yearCreated": [],
       "monthCreated": [],
       "dayCreated": [],
-      "temperature": [
-        {
-          "rule": "expect_column_values_to_be_between",
-          "params": {
-            "column": "temperature",
-            "min_value": 0,
-            "max_value": 20
-          }
-        }
-      ],
+      "temperature": [],
       "airPressure": [],
-      "humidity": [
-        {
-          "rule": "expect_column_values_to_be_between",
-          "params": {
-            "column": "humidity",
-            "min_value": 45,
-            "max_value": 90
-          }
-        }
-      ],
+      "humidity": [],
       "soilMoisture": [],
       "leafWetness": [],
       "batteryLevel": [],
@@ -85,8 +51,8 @@
           "params": {
             "column": "no2",
             "min_value": 2,
-            "max_value": 35,
-            "strict_min": true,
+            "max_value": 25,
+            "strict_min": false,
             "strict_max": false
           },
           "handler": "SmoothingOutliers"
@@ -98,7 +64,16 @@
           "params": {
             "column": "o3"
           },
-          "handler": "RaiseAlarm"
+          "handler": "RaisAlarm"
+        }
+      ],
+      "dateTo": [
+        {
+          "rule": "expect_column_values_to_not_be_null",
+          "params": {
+            "column": "dateTo"
+          },
+          "handler": "RaisAlarm"
         }
       ]
     }

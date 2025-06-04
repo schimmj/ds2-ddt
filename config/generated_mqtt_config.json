@@ -32,20 +32,23 @@
         "leafWetness",
         "batteryLevel",
         "status"
-      ]
+      ],
+      "timestamp_attribute": "leafWetness"
     },
     "air_quality": {
-      "subscribe": "/air-quality",
+      "subscribe": "/air_quality",
       "publish": {
-        "validated": "te/device/air-quality/measurements",
-        "alarm": "te/device/air-quality/alarm"
+        "validated": "te/device/air_quality/measurements",
+        "alarm": "te/device/air_quality/alarm"
       },
-      "batch_size": 25,
+      "batch_size": 30,
       "variables": [
         "co",
         "no2",
-        "o3"
-      ]
+        "o3",
+        "dateTo"
+      ],
+      "timestamp_attribute": "dateTo"
     }
   }
 }

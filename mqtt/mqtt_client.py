@@ -32,17 +32,11 @@ class MqttClient:
             
     # --- public transport API ------------------------------------------------
     def subscribe(self, topic: str) -> None:        self._client.subscribe(topic)
-    
-
     def publish(self, topic: str, obj) -> None:
         print(f"📬 Publishing: {topic}: {obj!r}")
         while not self._connected:
             time.sleep(0.1)
         msg_info = self._client.publish(topic, json.dumps(obj))
-
-
-    
-
     def add_listener(self, fn: Callable[[str, dict], None]) -> None: self._listeners.append(fn)
     def start(self): self._client.loop_start()
         

@@ -36,7 +36,7 @@
       "timestamp_attribute": "leafWetness"
     },
     "air_quality": {
-      "subscribe": "/air_quality",
+      "subscribe": "/air-quality",
       "publish": {
         "validated": "te/device/air_quality/measurements",
         "alarm": "te/device/air_quality/alarm"

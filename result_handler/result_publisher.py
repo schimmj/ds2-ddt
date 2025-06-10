@@ -13,6 +13,7 @@ A small `delay` parameter is optional for rate‑limiting bursty output.
 """
 from __future__ import annotations
 
+from curses import raw
 from typing import Callable, Dict, List
 import time
 import json
@@ -30,6 +31,7 @@ class ResultPublisher:
         delay: float = 1.0,                    # seconds between messages
     ) -> None:
         self._result_topic: str = topic_cfg["publish"]["validated"]
+        self._timestamp_attribute: str = topic_cfg["timestamp_attribute"]
         self._publish = publish
 
     # ------------------------------------------------------------------ #
@@ -55,5 +57,8 @@ class ResultPublisher:
                out[f"{col}.raw"] = val
             for col, val in cleaned_row.items():
                 out[f"{col}.cleaned"] = val
+            
+            if cleaned_row.get(self._timestamp_attribute):
+                out["ts"] = cleaned_row[self._timestamp_attribute]
 
             self._publish(self._result_topic, out)

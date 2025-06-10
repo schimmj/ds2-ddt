@@ -17,9 +17,10 @@ class DataCorrection:
         
         """
 
-        strategy: CorrectionStrategy = get_strategy(strategy_name)
+        strategy_cls: type[CorrectionStrategy] = get_strategy(strategy_name)
+        strategy = strategy_cls()
         corrected_column = column.copy()
         for index in rows_to_correct:
-            corrected_column[index] = strategy.apply(self, index=index, neighbours=column)
+            corrected_column[index] = strategy.apply(index=index, neighbours=column)
 
         return corrected_column

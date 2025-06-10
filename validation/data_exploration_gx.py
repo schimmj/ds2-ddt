@@ -25,32 +25,34 @@ batch_definition = data_asset.add_batch_definition_whole_dataframe(batch_definit
 
 # %%
 # Import sample data into Pandas DataFrame.
-data_path = "./../demo_data/weather_january.json"
+data_path = "./../demo_data/ARSO_air_quality_hourly_with_outliers_test.json"
 with open(data_path, 'r') as file:
     df = pd.read_json(file)
     
-metadata_df = pd.DataFrame(df['metdata'].tolist())
-batch_parameters = {"dataframe": metadata_df}
+
+batch_parameters = {"dataframe": df}
 
 
 # %%
 # Creating an Expectation Suite and adding it to the data context
-suite_name = "weather_expectations"
+suite_name = "air_quality_expectations"
 suite = gx.ExpectationSuite(name=suite_name)
 suite = context.suites.add(suite)
 
 #%% 
 # Creating an Expectation and adding it to the suite
 # temperature_expectation = gx.expectations.ExpectColumnValuesToBeBetween(column='tavg', min_value='-2', max_value='20')
-hints = gx.expectations.ExpectColumnValuesToBeBetween.__annotations__
-print(hints)
-# suite.add_expectation(temperature_expectation)
+timestamp_expectation = gx.expectations.ExpectColumnValuesToMatchRegex(column='dateTo', regex=r'^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(Z|[+-]\d{2}(:?\d{2})?)$')
+# hints = gx.expectations.ExpectColumnValuesToBeBetween.__annotations__
+# print(hints)
+suite.add_expectation(timestamp_expectation)
 # help(gx.expectations.ExpectColumnStdevToBeBetween)
+
 
 
 #%% 
 # Creating a Validation Definition
-definition_name = "weather_validation_definition"
+definition_name = "air_quality_validation_definition"
 validation_definition = gx.ValidationDefinition(data=batch_definition, suite=suite, name=definition_name)
 
 

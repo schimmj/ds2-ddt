@@ -44,7 +44,7 @@ class MqttClient:
 
     # --- internal ------------------------------------------------------------
     def _raw_on_message(self, client, userdata, msg):
-        # print(f"📬 {msg.topic}: {msg.payload!r}")
+        print(f"📬 {msg.topic}: {msg.payload!r}")
         try:
             payload = json.loads(msg.payload)
         except json.JSONDecodeError:

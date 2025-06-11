@@ -14,7 +14,7 @@ class MqttClient:
         self._client.on_message = self._raw_on_message
         self._client.on_connect = self._on_connect
         self._client.on_disconnect = lambda *args: print("MQTT Client disconnected")
-        self._client.on_publish = lambda *args: print("MQTT Client published")
+        # self._client.on_publish = lambda *args: print("MQTT Client published")
         self._connected = False
         self._client.connect(broker, port)
         self._client.loop_start()

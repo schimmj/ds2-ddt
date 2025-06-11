@@ -44,39 +44,41 @@ class AlarmPublisher:
     # ------------------------------------------------------------------ #
     def emit(
         self,
-        column: str,
-        expectation_result: Dict,
-        raw_df            # pd.DataFrame  (type hint avoided to keep deps tiny)
+        cleaned_df: pd.DataFrame,
+        expectation_result: Dict
     ) -> None:
         """
+        Emit one alarm per unexpected index using the `dateTo` timestamp.
+
         Parameters
         ----------
         column
-            Column name where the expectation failed.
+            Column where the expectation failed.
         expectation_result
-            One entry from `validation_results["results"]`.
-        raw_df
-            Original uncorrected DataFrame (used only to fetch raw value).
+            One result entry from validation_results["results"].
+        cleaned_df
+            Cleaned DataFrame (to extract `dateTo` timestamps).
         """
         idx_list: List[int] = expectation_result["result"]["unexpected_index_list"]
-        val_list           = expectation_result["result"]["unexpected_list"]
-        exp_type           = expectation_result["expectation_config"]["type"]
+        exp_type: str = expectation_result["expectation_config"]["type"]
 
-        for row_idx, bad_value in zip(idx_list, val_list):
-            bad_value = _json_safe(bad_value)
-            alarm_payload = {
-                "timestamp": _dt.datetime.utcnow().isoformat() + "Z",
-                "column": column,
-                "row_index": row_idx,
-                "offending_value": bad_value,
-                "expectation": exp_type,
-                "severity": "CRITICAL",
-                "message": (
-                    f"{exp_type} failed at row {row_idx}: "
-                    f"{column}={bad_value!r}"
-                ),
-            }
-            self._publish(self._alarm_topic, alarm_payload)
+        for row_idx in idx_list:
+            try:
+                ts = cleaned_df.loc[row_idx, "dateTo"]
+                # if pd.isna(ts):
+                #     continue  # Skip NaT/null timestamps
+                # # Format to ISO8601 with timezone (if not already present)
+                # ts_str = pd.to_datetime(ts).isoformat()
+                # if not ts_str.endswith("Z") and "+" not in ts_str:
+                #     ts_str += "+00:00"
+                alarm_payload = {
+                    "ts": ts,
+                    "type": exp_type,
+                    "severity": "CRITICAL"
+                }
+                self._publish(self._alarm_topic, alarm_payload)
+            except Exception as e:
+                print(f"⚠️  Failed to emit alarm for index {row_idx}: {e}")
 
     
     

@@ -41,7 +41,7 @@ class CorrectionEngine:
         self,
         validation_results: dict,
         df: pd.DataFrame
-    ) -> Tuple[pd.DataFrame, List[Tuple[str, dict]]]:
+    ) -> Tuple[pd.DataFrame, List[dict]]:
         """
         Returns
         -------
@@ -75,6 +75,6 @@ class CorrectionEngine:
                     strategy_name=strategy
                 )
             elif strategy == "RaiseAlarm":
-                alarm_events.append((col, res))  # is it necessary to put the whole result to an alarm?
+                alarm_events.append(res)  # is it necessary to put the whole result to an alarm?
 
         return cleaned_df, alarm_events

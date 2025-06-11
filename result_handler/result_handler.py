@@ -96,8 +96,8 @@ class ResultHandler:
         cleaned_df, alarm_events = self._engine.run(validation_results, df)
 
         # --- alarms first ------------------------------------------------- #
-        for column, res in alarm_events:
-            self._alarms.emit(column, res, df)
+        for alarm in alarm_events:
+            self._alarms.emit(cleaned_df, alarm)
 
         # --- publish cleaned rows ---------------------------------------- #
         self._results.emit(cleaned_df, df)

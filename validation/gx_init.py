@@ -3,6 +3,7 @@ import shutil
 from typing import Dict
 import great_expectations as gx
 from config import ConfigLoader
+from utils.utils import topic_url_to_name
 
 class GXInitializer:
     """
@@ -55,7 +56,7 @@ class GXInitializer:
 
     def _create_expectation_suites(self):
         for topic in self.validation_config['validations']:
-            suite_name = f"{topic}_expectation_suite"
+            suite_name = f"{topic_url_to_name(topic)}_expectation_suite"
             suite = gx.ExpectationSuite(name=suite_name)
             self.suites[topic] = self.context.suites.add(suite)
 
@@ -109,7 +110,7 @@ class GXInitializer:
     def _create_validation_definitions(self):
 
         for topic in self.validation_config['validations']:
-            definition_name = f"{topic}_validation_definition"
+            definition_name = f"{topic_url_to_name(topic)}_validation_definition"
             validation_definition = gx.ValidationDefinition(
                 data=self.batch_definition,
                 suite=self.suites[topic],

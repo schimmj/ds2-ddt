@@ -1,118 +1,134 @@
-    @startuml ds2
-    skinparam classAttributeIconSize 0
+@startuml ds2
+skinparam classAttributeIconSize 0
 
-    ' ─────────────── MQTT / routing ───────────────────────────
-    package mqtt {
-        class MqttClient {
-            +__init__(broker, port)
-            +subscribe(topic)
-            +publish(topic, obj)
-            +add_listener(callback)
-            +start()
-            +stop()
-        }
+' ─────────────── API Ingestion ─────────────────────────────
+package "api" {
+    class ApiServer {
+        + ingest_data(req: IngestRequest)
+    }
+}
 
-        class MqttPublisher {
-            +__init__(client)
-            +publish(topic, obj)
-        }
 
-        class TopicRouter {
-            +__init__(client, cfg_path="generated_mqtt_config.json")
-            +_dispatch(raw_topic, payload)
-        }
 
-        MqttPublisher --> MqttClient : uses
-        TopicRouter   --> MqttClient : initilizes client subscription
+' ─────────────── MQTT / routing ───────────────────────────
+package mqtt {
+    class MqttClient {
+        +__init__(broker, port)
+        +subscribe(topic)
+        +publish(topic, obj)
+        +add_listener(callback)
+        +start()
+        +stop()
     }
 
-    ' ─────────────── Batch pipeline ───────────────────────────
-    package batch {
-        class DataQueue {
-            +__init__(batch_size, on_batch_ready)
-            +add(row)
-        }
-
-        class BatchValidator {
-            +__init__(topic)
-            +__call__(df)
-        }
-
-        class BatchPipeline {
-            +__init__(topic, batch_size)
-            +add(row)
-            +_process(df)
-        }
-
-        BatchPipeline --> DataQueue        : buffers
-        BatchPipeline --> BatchValidator   : validates
-        BatchPipeline --> result_handler.ResultHandler : forwards
+    class MqttPublisher {
+        +__init__(client)
+        +publish(topic, obj)
     }
 
-    ' ─────────────── Validation bootstrap ────────────────────
-    package validation {
-        class GXInitializer {
-            +__init__(gx_root_dir="./validation")
-        }
-        note top of GXInitializer
-            This class is responsible for initializing 
-            the Great Expectations context and setting
-            up the necessary configurations. The context 
-            is used later in the validation process
-            by the BatchValidator.
-        end note
+
+    MqttPublisher --> MqttClient : uses
+}
+
+' ─────────────── Batch pipeline ───────────────────────────
+package "batch pipeline" {
+    class PipelineManager {
+        - _pipelines: Dict[str, BatchPipeline]
+        + __init__(cfg_path: str = None, mqtt_client: Optional[MqttClient] = None)
+        + handler_for(topic: str) : Callable[[str, dict], None]
+        + dispatch(topic: str, payload: dict) : bool
+        + raw_topics : List[str]
     }
 
-    ' ─────────────── Result handling / publish ───────────────
-    package result_handler {
-        class ResultHandler {
-            +set_default_publisher(fn)
-            +__init__(topic, cfg=None, publish=None)
-            +handle(validation_results, df)
-        }
 
-        class ResultPublisher {
-            +__init__(topic_cfg, publish, delay=1.0)
-            +emit(cleaned_df, raw_df)
-        }
-
-        class AlarmPublisher {
-            + __init__(topic_cfg, publish)
-            + emit(column, expectation_result, raw_df)
-        }
-
-        ResultHandler --> ResultPublisher      : uses
-        ResultHandler --> AlarmPublisher       : uses
-        ResultHandler --> data_correction.CorrectionEngine : uses
+    class DataQueue {
+        +__init__(batch_size, on_batch_ready)
+        +add(row)
     }
 
-    ' ─────────────── Data-correction engine ───────────────────
-    package data_correction {
-        class CorrectionEngine {
-            +__init__(topic, cfg, corrector)
-            +run(validation_results, df)
-        }
-
-        class DataCorrection {
-            +correct_column(column, rows_to_correct, strategy_name)
-        }
-
-        abstract class CorrectionStrategy {
-            +apply(index, neighbours)
-        }
-
-        class MissingValueImputation
-        class SmoothingOutliers
-
-        CorrectionStrategy <|-- MissingValueImputation
-        CorrectionStrategy <|-- SmoothingOutliers
-        CorrectionStrategy <|-- TimeStampCorrection
-
-        CorrectionEngine --> DataCorrection : uses
-        DataCorrection   --> CorrectionStrategy : delegates
+    class BatchValidator {
+        +__init__(topic)
+        +__call__(df)
     }
 
-    ' ─────────────── Cross-package links ─────────────────────
-    TopicRouter --> batch.BatchPipeline : routes
+    class BatchPipeline {
+        +__init__(topic, batch_size)
+        +add(row)
+        +_process(df)
+    }
 
-    @enduml
+    BatchPipeline --> DataQueue        : buffers
+    BatchPipeline --> BatchValidator   : validates
+    BatchPipeline --> result_handler.ResultHandler : forwards
+    PipelineManager o-- BatchPipeline    : holds  
+}
+
+ApiServer        --> PipelineManager : uses  
+MqttClient       --> PipelineManager : uses  
+
+' ─────────────── Validation bootstrap ────────────────────
+package validation {
+    class GXInitializer {
+        +__init__(gx_root_dir="./validation")
+    }
+    note top of GXInitializer
+        This class is responsible for initializing
+        the Great Expectations context and setting
+        up the necessary configurations. The context
+        is used later in the validation process
+        by the BatchValidator.
+    end note
+}
+
+' ─────────────── Result handling / publish ───────────────
+package result_handler {
+    class ResultHandler {
+        +set_default_publisher(fn)
+        +__init__(topic, cfg=None, publish=None)
+        +handle(validation_results, df)
+    }
+
+    class ResultPublisher {
+        +__init__(topic_cfg, publish, delay=1.0)
+        +emit(cleaned_df, raw_df)
+    }
+
+    class AlarmPublisher {
+        + __init__(topic_cfg, publish)
+        + emit(column, expectation_result, raw_df)
+    }
+
+    ResultHandler --> ResultPublisher      : uses
+    ResultHandler --> AlarmPublisher       : uses
+    ResultHandler --> data_correction.CorrectionEngine : uses
+}
+
+' ─────────────── Data-correction engine ───────────────────
+package data_correction {
+    class CorrectionEngine {
+        +__init__(topic, cfg, corrector)
+        +run(validation_results, df)
+    }
+
+    class DataCorrection {
+        +correct_column(column, rows_to_correct, strategy_name)
+    }
+
+    abstract class CorrectionStrategy {
+        +apply(index, neighbours)
+    }
+
+    class MissingValueImputation
+    class SmoothingOutliers
+
+    CorrectionStrategy <|-- MissingValueImputation
+    CorrectionStrategy <|-- SmoothingOutliers
+    CorrectionStrategy <|-- TimeStampCorrection
+
+    CorrectionEngine --> DataCorrection : uses
+    DataCorrection   --> CorrectionStrategy : delegates
+}
+
+' ─────────────── Cross-package links ─────────────────────
+
+@enduml

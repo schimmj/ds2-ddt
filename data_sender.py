@@ -48,7 +48,7 @@ except ValueError:  # pragma: no cover – invalid int in env
     DEFAULT_BROKER_PORT = 1883
 
 DEFAULT_DATA_PATH = "demo_data/air-quality-hourly.json"
-DEFAULT_DELAY = 0.3  # seconds
+DEFAULT_DELAY = 100  # seconds
 
 # ---------------------------------------------------------------------------
 # Argument parsing

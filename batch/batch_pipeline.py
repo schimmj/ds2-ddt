@@ -15,6 +15,7 @@ class BatchPipeline:
     # external API: just forward rows to the queue
     def add(self, row: dict) -> None:
         self.queue.add(row)
+        print(f"Added row to queue for topic '{self.validator.topic}': {row}")
 
     # internal callback
     def _process(self, df: pd.DataFrame) -> None:

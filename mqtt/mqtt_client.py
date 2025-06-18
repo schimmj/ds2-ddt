@@ -18,12 +18,11 @@ class MqttClient:
         self._connected = False
         self._client.connect(broker, port)
         self._client.loop_start()
-        print(f"MQTT Client connected to {broker}:{port}")
+        print(f"✔ MQTT Client connected to {broker}:{port}")
         self._listeners: List[Callable[[str, dict], None]] = []
 
     def _on_connect(self, client, userdata, flags, rc, *args):
         if rc == 0:
-            print("✔ Connected to MQTT broker")
             self._connected = True
         else:
             print(f"✖ Failed to connect, rc={rc}")

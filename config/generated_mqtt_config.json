@@ -1,6 +1,6 @@
 {
   "topics": {
-    "iot_data": {
+    "/iot-data": {
       "subscribe": "/iot-data",
       "publish": {
         "validated": "te/device/iot-data/measurements",
@@ -35,13 +35,13 @@
       ],
       "timestamp_attribute": "leafWetness"
     },
-    "air_quality": {
+    "/air-quality": {
       "subscribe": "/air-quality",
       "publish": {
         "validated": "te/device/air_quality/measurements",
         "alarm": "te/device/air_quality/alarm"
       },
-      "batch_size": 30,
+      "batch_size": 5,
       "variables": [
         "co",
         "no2",

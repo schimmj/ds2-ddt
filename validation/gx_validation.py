@@ -1,6 +1,8 @@
 import great_expectations as gx
 import pandas as pd
+from utils.utils import topic_url_to_name
 from datetime import datetime
+
 
 from urllib3 import Retry
 
@@ -12,7 +14,7 @@ def validate_batch(df: pd.DataFrame, topic):
     batch_parameters = {"dataframe": df}
     
     # Creating a Validation Definition
-    definition_name = f"{topic}_validation_definition"
+    definition_name = f"{topic_url_to_name(topic)}_validation_definition"
     
     try:
         validation_definition = context.validation_definitions.get(definition_name)
@@ -22,8 +24,6 @@ def validate_batch(df: pd.DataFrame, topic):
         
     # Run the validation definition with the batch parameters
     validation_result = validation_definition.run(batch_parameters=batch_parameters, result_format="COMPLETE")
-    
-    # print(validation_result)
     
     return validation_result
 

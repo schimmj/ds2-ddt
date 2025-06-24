@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2025 - 2025 Software GmbH, Darmstadt, Germany and/or its subsidiaries and/or its affiliates
+# SPDX-License-Identifier: Apache-2.0
+
+import great_expectations as gx
 import pandas as pd
 from utils.utils import topic_url_to_name
 from datetime import datetime

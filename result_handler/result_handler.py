@@ -62,20 +62,20 @@ class ResultHandler:
         cfg = cfg or ConfigProvider()
 
         # network layer ---------------------------------------------------- #
-        # publish = publish or ResultHandler._default_publish
-        # if publish is None:
-        #     raise RuntimeError(
-        #         "ResultHandler needs a publish‑callable, but none was provided "
-        #         "and no default is registered.  "
-        #         "Call ResultHandler.set_default_publisher() in main.py."
-        #     )
+        publish = publish or ResultHandler._default_publish
+        if publish is None:
+            raise RuntimeError(
+                "ResultHandler needs a publish‑callable, but none was provided "
+                "and no default is registered.  "
+                "Call ResultHandler.set_default_publisher() in main.py."
+            )
 
         # domain engines --------------------------------------------------- #
         topic_cfg = cfg.mqtt()["topics"][topic]
 
         self._engine  = CorrectionEngine(topic, cfg, DataCorrection())
-        # self._alarms  = AlarmPublisher(topic_cfg, publish)
-        # self._results = ResultPublisher(topic_cfg, publish)
+        self._alarms  = AlarmPublisher(topic_cfg, publish)
+        self._results = ResultPublisher(topic_cfg, publish)
 
     # --------------------------------------------------------------------- #
     #  public API
@@ -95,10 +95,10 @@ class ResultHandler:
         """
         cleaned_df, alarm_events = self._engine.run(validation_results, df)
 
-        # # --- alarms first ------------------------------------------------- #
-        # for alarm in alarm_events:
-        #     self._alarms.emit(cleaned_df, alarm)
+        # --- alarms first ------------------------------------------------- #
+        for alarm in alarm_events:
+            self._alarms.emit(cleaned_df, alarm)
 
-        # # --- publish cleaned rows ---------------------------------------- #
-        # self._results.emit(cleaned_df, df)
+        # --- publish cleaned rows ---------------------------------------- #
+        self._results.emit(cleaned_df, df)
         return cleaned_df

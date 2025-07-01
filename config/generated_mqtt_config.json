@@ -1,7 +1,7 @@
 {
   "topics": {
-    "/iot-data": {
-      "subscribe": "/iot-data",
+    "iot-data": {
+      "subscribe": "iot-data",
       "publish": {
         "validated": "te/device/iot-data/measurements",
         "alarm": "te/device/iot-data/alarm"
@@ -35,8 +35,8 @@
       ],
       "timestamp_attribute": "leafWetness"
     },
-    "/air-quality": {
-      "subscribe": "/air-quality",
+    "air-quality": {
+      "subscribe": "air-quality",
       "publish": {
         "validated": "te/device/air_quality/measurements",
         "alarm": "te/device/air_quality/alarm"

@@ -4,7 +4,8 @@ skinparam classAttributeIconSize 0
 ' ─────────────── API Ingestion ─────────────────────────────
 package "api" {
     class ApiServer {
-        + ingest_data(req: IngestRequest)
+        + ingest_data_item(payload, request, topic)
+        + ingest_data_batch(payloads, request, topic)
     }
 }
 
@@ -55,6 +56,7 @@ package "batch pipeline" {
         +__init__(topic, batch_size)
         +add(row)
         +_process(df)
+        +process_sync(df)
     }
 
     BatchPipeline --> DataQueue        : buffers

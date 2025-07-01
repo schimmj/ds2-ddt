@@ -70,4 +70,14 @@ class PipelineManager:
     def raw_topics(self):
         """List of all topics this manager knows about."""
         return list(self._pipelines.keys())
+    
+
+    def get_pipeline(self, topic: str) -> BatchPipeline:
+        """
+        Get the BatchPipeline for a given topic.
+        Raises KeyError if no pipeline is configured for that topic.
+        """
+        if topic not in self._pipelines:
+            raise KeyError(f"No pipeline configured for topic '{topic}'")
+        return self._pipelines[topic]
 

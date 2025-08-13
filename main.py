@@ -31,7 +31,7 @@ def main():
 
     # --- PipelineManager (wires pipelines into the MQTT client) ---
     manager = PipelineManager(
-        cfg_path="generated_mqtt_config.json",
+        cfg_path="./config",
         mqtt_client=client
     )
 

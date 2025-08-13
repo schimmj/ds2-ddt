@@ -1,7 +1,7 @@
 # %%
 # Import required modules from GX library.
 import json
-import great_expectations as gx
+import validation as gx
 
 import pandas as pd
 
@@ -38,6 +38,7 @@ batch_parameters = {"dataframe": df}
 suite_name = "air_quality_expectations"
 suite = gx.ExpectationSuite(name=suite_name)
 suite = context.suites.add(suite)
+suites = context.suites
 
 #%% 
 # Creating an Expectation and adding it to the suite

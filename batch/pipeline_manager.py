@@ -4,6 +4,8 @@ from re import sub
 from typing import Any, Callable, Dict, Optional
 
 from batch import BatchPipeline
+from config import config_loader, config_provider
+from config.config_loader import ConfigLoader
 from mqtt import MqttClient  # your existing MQTT adapter
 from config import ConfigProvider
 
@@ -18,12 +20,12 @@ class PipelineManager:
 
     def __init__(self, cfg_path: str, mqtt_client: Optional[MqttClient] = None):
         self._pipelines: Dict[str, BatchPipeline] = {}
-        cfg_provider = ConfigProvider()
+        config_provider = ConfigProvider()
 
-        self._load_pipelines(cfg_provider.mqtt())
+        self._load_pipelines(config_provider.mqtt())
 
         if mqtt_client:
-            for topic, config in cfg_provider.mqtt().get("topics",{}).items():
+            for topic, config in config_provider.mqtt().get("topics",{}).items():
                 topic_to_subscribe = config.get("subscribe", topic)
                 mqtt_client.subscribe(topic_to_subscribe)
                 mqtt_client.add_listener(self._make_handler(topic))
@@ -34,7 +36,8 @@ class PipelineManager:
         for topic, config in cfg.get("topics", {}).items():
             batch_size = config.get("batch_size", 50)
             topic_to_subscribe = config.get("subscribe", topic)
-            pipeline = BatchPipeline(topic=topic_to_subscribe, batch_size=batch_size)
+            config_name = config.get("validation_config", None)
+            pipeline = BatchPipeline(topic=topic_to_subscribe, config_name= config_name, batch_size=batch_size)
             self._pipelines[topic_to_subscribe] = pipeline
 
     def _make_handler(self, topic: str) -> Callable[[str, dict], None]:

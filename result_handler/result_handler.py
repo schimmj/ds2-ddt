@@ -45,7 +45,7 @@ class ResultHandler:
 
 
 
-    def __init__(self, topic: str, cfg: ConfigProvider | None = None, publish: Callable[[str, dict], None] | None = None) -> None:
+    def __init__(self, topic: str, config_name:str, cfg: ConfigProvider | None = None, publish: Callable[[str, dict], None] | None = None) -> None:
         """
         Parameters
         ----------
@@ -73,7 +73,7 @@ class ResultHandler:
         # domain engines --------------------------------------------------- #
         topic_cfg = cfg.mqtt()["topics"][topic]
 
-        self._engine  = CorrectionEngine(topic, cfg, DataCorrection())
+        self._engine  = CorrectionEngine(topic, config_name, cfg, DataCorrection())
         self._alarms  = AlarmPublisher(topic_cfg, publish)
         self._results = ResultPublisher(topic_cfg, publish)
 

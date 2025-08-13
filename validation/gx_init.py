@@ -1,9 +1,9 @@
 import os
 import shutil
 from typing import Dict
-import great_expectations as gx
 from config import ConfigLoader
 from utils.utils import topic_url_to_name
+import great_expectations as gx
 
 class GXInitializer:
     """
@@ -12,7 +12,7 @@ class GXInitializer:
     """
     def __init__(self, gx_root_dir: str = './validation'):
         self.gx_root_dir = gx_root_dir
-        self.config_name = 'generated_validation_config.json'
+        self.validation_config_dir: str = './config/validations'
         self.context = None
         self.suites: Dict[str, gx.ExpectationSuite] = {}
         self.validation_definitions: Dict[str, gx.ValidationDefinition] = {}
@@ -27,8 +27,6 @@ class GXInitializer:
         self._create_data_source()
         # Create expectation suites for each topic.
         self._create_expectation_suites()
-        # Add expectations to each suite based on the config.
-        self._add_expectations_to_suites()
         # Create validation definitions linking data and expectation suites.
         self._create_validation_definitions()
         
@@ -41,8 +39,8 @@ class GXInitializer:
         self.context = gx.get_context(mode='file', project_root_dir=self.gx_root_dir)
 
     def _load_validation_config(self):
-        config_loader = ConfigLoader()
-        self.validation_config = config_loader.load_config(self.config_name)
+        config_loader = ConfigLoader(self.validation_config_dir)
+        self.validation_config = config_loader.load_config()
 
     def _create_data_source(self):
         data_source_name = "pandas-data-source"
@@ -55,12 +53,6 @@ class GXInitializer:
         self.batch_definition = self.data_asset.add_batch_definition_whole_dataframe(batch_definition_name)
 
     def _create_expectation_suites(self):
-        for topic in self.validation_config['validations']:
-            suite_name = f"{topic_url_to_name(topic)}_expectation_suite"
-            suite = gx.ExpectationSuite(name=suite_name)
-            self.suites[topic] = self.context.suites.add(suite)
-
-    def _add_expectations_to_suites(self):
         expectation_mapping = {
             "expect_column_values_to_be_between": gx.expectations.ExpectColumnValuesToBeBetween,
             "expect_column_pair_values_a_to_be_greater_than_b": gx.expectations.ExpectColumnPairValuesAToBeGreaterThanB,
@@ -93,27 +85,32 @@ class GXInitializer:
             "expect_column_values_to_not_be_in_set": gx.expectations.ExpectColumnValuesToNotBeInSet,
         }
 
-        for topic, attributes in self.validation_config['validations'].items():
-            suite: gx.ExpectationSuite = self.suites[topic]
-            for attribute, expectations in attributes.items():
-                for expectation in expectations:
-                    rule = expectation['rule']
-                    params = expectation['params']
-    
-                    expectation_class = expectation_mapping.get(rule)
-                    if expectation_class:
+        for id in self.validation_config:
+            for topic, attributes in self.validation_config[id].items():
+                suite_name = f"{id}_{topic}_expectation_suite"
+                suite = gx.ExpectationSuite(name=suite_name)
+                self.suites[suite_name] = self.context.suites.add(suite)
+
+                for attribute, expectations in attributes.items():
+                    for expectation in expectations:
+                        rule = expectation['rule']
+                        params = expectation['params']
+        
+                        expectation_class = expectation_mapping.get(rule)
+                        if expectation_class:
+                
+                            expectation_obj = expectation_class(**params)
             
-                        expectation_obj = expectation_class(**params)
-         
-                        suite.add_expectation(expectation_obj)
+                            suite.add_expectation(expectation_obj)
+
 
     def _create_validation_definitions(self):
 
-        for topic in self.validation_config['validations']:
-            definition_name = f"{topic_url_to_name(topic)}_validation_definition"
+        for suite_name, suite in self.suites.items():
+            definition_name = f"{suite_name.removesuffix("_expectation_suite")}_validation_definition"
             validation_definition = gx.ValidationDefinition(
                 data=self.batch_definition,
-                suite=self.suites[topic],
+                suite=suite,
                 name=definition_name
             )
-            self.validation_definitions[topic] = self.context.validation_definitions.add(validation_definition)
+            self.validation_definitions[definition_name] = self.context.validation_definitions.add(validation_definition)

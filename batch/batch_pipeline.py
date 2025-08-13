@@ -7,15 +7,15 @@ import pandas as pd
 class BatchPipeline:
     """Glue DataQueue → BatchValidator → ResultHandler."""
 
-    def __init__(self, topic: str, batch_size: int):
-        self.validator = BatchValidator(topic)
-        self.result_handler = ResultHandler(topic)
+    def __init__(self, topic:str,  config_name: str, batch_size: int):
+        self.validator = BatchValidator(config_name)
+        self.result_handler = ResultHandler(topic, config_name)
         self.queue = DataQueue(batch_size, self._process)
 
  
     def add(self, row: dict) -> None:
         self.queue.add(row)
-        print(f"Added row to queue for topic '{self.validator.topic}': {row}")
+        print(f"Added row to queue for topic '{self.validator.config_name}': {row}")
 
     # internal callback
     def _process(self, df: pd.DataFrame) -> None:

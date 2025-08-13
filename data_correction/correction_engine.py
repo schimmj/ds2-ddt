@@ -28,10 +28,12 @@ class CorrectionEngine:
     def __init__(
         self,
         topic: str,
+        config_name: str,
         cfg: ConfigProvider,
         corrector: DataCorrection
     ) -> None:
-        self._rules = cfg.validation()["validations"][topic]
+        config_id = config_name.removesuffix("_"+topic)
+        self._rules = cfg.validation()[config_id][topic]
         self._corrector = corrector
 
     # ------------------------------------------------------------------ #

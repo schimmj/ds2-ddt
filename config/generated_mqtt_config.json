@@ -1,46 +1,12 @@
 {
   "topics": {
-    "iot-data": {
-      "subscribe": "iot-data",
-      "publish": {
-        "validated": "te/device/iot-data/measurements",
-        "alarm": "te/device/iot-data/alarm"
-      },
-      "batch_size": 20,
-      "variables": [
-        "id",
-        "sensorId",
-        "sensorName",
-        "sensorDisplayname",
-        "active",
-        "organizationId",
-        "organizationName",
-        "suborganizationId",
-        "suborganizationName",
-        "dateCaptured",
-        "yearCaptured",
-        "monthCaptured",
-        "dayCaptured",
-        "dateCreated",
-        "yearCreated",
-        "monthCreated",
-        "dayCreated",
-        "temperature",
-        "airPressure",
-        "humidity",
-        "soilMoisture",
-        "leafWetness",
-        "batteryLevel",
-        "status"
-      ],
-      "timestamp_attribute": "leafWetness"
-    },
     "air-quality": {
       "subscribe": "air-quality",
       "publish": {
         "validated": "te/device/air_quality/measurements",
         "alarm": "te/device/air_quality/alarm"
       },
+      "validation_config": "2cbfd4bf-9bac-44a4-bcda-df3c39bb233d_air-quality",
       "batch_size": 5,
       "variables": [
         "co",

@@ -8,8 +8,9 @@ from tests.test_result_mqtt_pipeline import pipeline
 from typing import List, Literal, Optional, Dict, Any
 import pandas as pd
 import json
-from config import ConfigProvider
+from config import ConfigProvider, config_manager
 from config import ConfigSaver
+from config import ConfigManager
 from validation.gx_init import GXInitializer
 
 
@@ -131,10 +132,11 @@ async def ingest_config(
     payload: Dict[str, Any] = Body(..., description="Configuration JSON object.")):
 
 
-    config_saver = ConfigSaver(base_path="config")
+    # config_saver = ConfigSaver(base_path="config")
+    config_manager = ConfigManager(base_path="config")
     
     try:
-        target = config_saver.write_atomic(cfg_type, cfg_id, payload)
+        target = config_manager.write_atomic(cfg_type, cfg_id, payload)
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:
@@ -159,4 +161,47 @@ async def ingest_config(
     return {
         "status": "Configuration saved",
         "type": cfg_type
+    }
+
+
+@app.delete("/configs/{cfg_type}/{cfg_id}",
+            summary="Delete a configuration",
+            description="Delete a specific configuration by type and ID.")
+async def delete_config(
+    request: Request,
+    cfg_type: Literal["mqtt", "validation"] = Path(..., description="Type of configuration to delete"),
+    cfg_id: Optional[str] = Path(..., description="ID of the configuration to delete (file stem for validation)")
+):
+    # only allow deleting a single configuration state file
+    if cfg_type not in ["mqtt", "validation"]:
+        raise HTTPException(status_code=400, detail="Invalid configuration type. Use 'mqtt' or 'validation'.")
+    if cfg_type == "validation" and not cfg_id:
+        raise HTTPException(status_code=400, detail="Validation config requires a file-stem in the path.")
+    if cfg_type == "mqtt":
+        # keep this explicit for now; you can enable later if desired
+        raise HTTPException(status_code=400, detail="MQTT config deletion is disabled via this endpoint.")
+
+    manager = ConfigManager(base_path="config")
+    try:
+        removed_paths = manager.delete("validation", cfg_id, missing_ok=False)
+    except FileNotFoundError as e:
+        raise HTTPException(status_code=404, detail=str(e))
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to delete config: {e}")
+
+    # reload GX after modification to validation states
+    try:
+        gx = request.app.state.gx
+        gx.reload_gx()
+    except AttributeError:
+        raise HTTPException(status_code=500, detail="GX initializer missing on app.state (app.state.gx).")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to reload GX after deletion: {e}")
+
+    return {
+        "status": "deleted",
+        "type": cfg_type,
+        "gx_reloaded": True,
     }

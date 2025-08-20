@@ -6,7 +6,23 @@
         "validated": "te/device/air_quality/measurements",
         "alarm": "te/device/air_quality/alarm"
       },
-      "validation_config": "2cbfd4bf-9bac-44a4-bcda-df3c39bb233d_air-quality",
+      "validation_config": "f8dd8f8d-c0ea-4b7f-95d4-9f253cceca07_air-quality",
+      "batch_size": 5,
+      "variables": [
+        "co",
+        "no2",
+        "o3",
+        "dateTo"
+      ],
+      "timestamp_attribute": "dateTo"
+    },
+    "iot-data": {
+      "subscribe": "iot-data",
+      "publish": {
+        "validated": "te/device/iot-data/measurements",
+        "alarm": "te/device/iot-data/alarm"
+      },
+      "validation_config": "f8dd8f8d-c0ea-4b7f-95d4-9f253cceca07_iot-data",
       "batch_size": 5,
       "variables": [
         "co",

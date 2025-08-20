@@ -35,8 +35,9 @@ def main():
         mqtt_client=client
     )
 
-    # inject into FastAPI
+    # --- API server setup ---#
     app.state.manager = manager
+    app.state.gx = gx_initializer
 
     # start listening into MQTT (non-blocking)
     client.start()

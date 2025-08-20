@@ -30,7 +30,16 @@ class MqttClient:
             
             
     # --- public transport API ------------------------------------------------
-    def subscribe(self, topic: str) -> None:        self._client.subscribe(topic)
+    def subscribe(self, topic: str) -> None:
+        self._client.subscribe(topic)
+        print(f"📬 Subscribed to MQTT topic: \t {topic}")
+    def unsubscribe(self, topic: str) -> None:
+        try:
+            self._client.unsubscribe(topic)
+            print(f"📬 Unsubscribed from MQTT topic: \t {topic}")
+        except Exception as e:
+            print(f"⚠️  Failed to unsubscribe from {topic}: {e}")
+
     def publish(self, topic: str, obj) -> None:
         print(f"📬 Publishing: {topic}: {obj!r}")
         while not self._connected:

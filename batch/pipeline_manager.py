@@ -1,8 +1,7 @@
-import json
-import logging
-from re import sub
+#batch/pipeline_manager.py
+from curses import raw
 from typing import Any, Callable, Dict, Optional
-
+from threading import RLock
 from batch import BatchPipeline
 from config import config_loader, config_provider
 from config.config_loader import ConfigLoader
@@ -20,26 +19,62 @@ class PipelineManager:
 
     def __init__(self, cfg_path: str, mqtt_client: Optional[MqttClient] = None):
         self._pipelines: Dict[str, BatchPipeline] = {}
+        self._lock  = RLock()
+        self._mqtt_client = mqtt_client
+        self._listeners : Dict[str, Callable[[str, dict], None]] = {}
+
         config_provider = ConfigProvider()
 
-        self._load_pipelines(config_provider.mqtt())
+        self._apply_mqtt_config(config_provider.mqtt())
 
-        if mqtt_client:
-            for topic, config in config_provider.mqtt().get("topics",{}).items():
+
+    def _apply_mqtt_config(self, mqtt_cfg: Dict[str, Any]) -> None:
+        """
+        Apply MQTT configuration to the MqttClient if available.
+        Subscribes to all topics defined in the config.
+        """
+        with self._lock:
+            # compute the new desired topics
+            desired_topics = {}
+            for topic, config in mqtt_cfg.get("topics", {}).items():
                 topic_to_subscribe = config.get("subscribe", topic)
-                mqtt_client.subscribe(topic_to_subscribe)
-                mqtt_client.add_listener(self._make_handler(topic))
-                print(f"🔌 Subscribed to MQTT topic: {topic_to_subscribe}")
+                desired_topics[topic_to_subscribe] = {
+                    "batch_size": config.get("batch_size",50),
+                    "validation_config": config.get("validation_config"),
+                    "raw_topic": topic
+                }
+            
+            #remove pipelines that are no longer in the config
+            for existing in list(self._pipelines.keys()):
+                if existing not in desired_topics:
+                    self._pipelines.pop(existing, None)
+                    if self._mqtt_client:
+                        self._mqtt_client.unsubscribe(existing)
 
-    def _load_pipelines(self, cfg: Dict[str, Any]) -> None:
-        
-        for topic, config in cfg.get("topics", {}).items():
-            batch_size = config.get("batch_size", 50)
-            topic_to_subscribe = config.get("subscribe", topic)
-            config_name = config.get("validation_config", None)
-            pipeline = BatchPipeline(topic=topic_to_subscribe, config_name= config_name, batch_size=batch_size)
-            self._pipelines[topic_to_subscribe] = pipeline
+            # add or update pipelines based on the config
+            for desired_topic, desired_config in desired_topics.items():
+                if desired_topic not in self._pipelines:
+                    self._pipelines[desired_topic] = BatchPipeline(
+                        topic= desired_topic,
+                        config_name=desired_config["validation_config"],
+                        batch_size=desired_config["batch_size"]
+                    )
 
+                    if self._mqtt_client:
+                        self._mqtt_client.subscribe(desired_topic)
+                        if desired_topic not in self._listeners:
+                            handler = self._make_handler(desired_topic)
+                            self._listeners[desired_topic] = handler
+                            self._mqtt_client.add_listener(handler)
+    
+    def reload_from_provider(self, config_provider: ConfigProvider) -> None:
+        """
+        Reloads the pipelines from the given ConfigProvider.
+        This is useful for dynamic reconfiguration without restarting the service.
+        """ 
+        self._apply_mqtt_config(config_provider.mqtt())
+
+   
     def _make_handler(self, topic: str) -> Callable[[str, dict], None]:
         """
         Returns a callback that can be passed to MqttClient.add_listener().

@@ -16,7 +16,14 @@ class GXInitializer:
         self.context = None
         self.suites: Dict[str, gx.ExpectationSuite] = {}
         self.validation_definitions: Dict[str, gx.ValidationDefinition] = {}
+
+        self._init_gx() 
         
+    def _init_gx(self):
+        """ Initializes the Great Expectations context and sets up the data source, expectation suites, and validation definitions.
+        """
+        self.suites = {}
+        self.validation_definitions = {}
         # Delete existing gx folder for a fresh start.
         self._check_and_delete_gx_folder()
         # Initialize the GE context.
@@ -29,7 +36,12 @@ class GXInitializer:
         self._create_expectation_suites()
         # Create validation definitions linking data and expectation suites.
         self._create_validation_definitions()
+
+    def reload_gx(self):
+        """Reloads the Great Expectations context and its configurations."""
+        self._init_gx()
         
+
     def _check_and_delete_gx_folder(self):
         gx_folder_path = os.path.join(self.gx_root_dir, 'gx')
         if os.path.exists(gx_folder_path):

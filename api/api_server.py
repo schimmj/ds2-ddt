@@ -10,6 +10,7 @@ import pandas as pd
 import json
 from config import ConfigProvider
 from config import ConfigSaver
+from validation.gx_init import GXInitializer
 
 
 app = FastAPI(title="Data Ingestion API")
@@ -140,9 +141,22 @@ async def ingest_config(
         raise HTTPException(status_code=500, detail=f"Failed to write config: {e}")
     
 
+    # reload gx and pipelines
+    try:
+        provider = ConfigProvider()
+
+        if cfg_type == "mqtt":
+            request.app.state.manager.reload_from_provider(provider)
+        elif cfg_type == "validation":
+            gx_initializer: GXInitializer =  request.app.state.gx
+            gx_initializer.reload_gx()
+        else:
+            raise HTTPException(status_code=400, detail="Invalid configuration type. Use 'mqtt' or 'validation'.")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to reload configurations: {e}")
+    
+
     return {
-        "status": "ok",
-        "type": cfg_type,
-        "name": cfg_id or ("generated_mqtt_config" if cfg_type == "mqtt" else None),
-        "path": str(target)
+        "status": "Configuration saved",
+        "type": cfg_type
     }

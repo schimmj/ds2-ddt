@@ -9,7 +9,6 @@ from typing import List, Literal, Optional, Dict, Any
 import pandas as pd
 import json
 from config import ConfigProvider, config_manager
-from config import ConfigSaver
 from config import ConfigManager
 from validation.gx_init import GXInitializer
 
@@ -131,8 +130,6 @@ async def ingest_config(
     cfg_id: Optional[str] = Query(None, alias="config_id", description="Optional ID for the configuration (required for validation)"),
     payload: Dict[str, Any] = Body(..., description="Configuration JSON object.")):
 
-
-    # config_saver = ConfigSaver(base_path="config")
     config_manager = ConfigManager(base_path="config")
     
     try:
@@ -183,7 +180,7 @@ async def delete_config(
 
     manager = ConfigManager(base_path="config")
     try:
-        removed_paths = manager.delete("validation", cfg_id, missing_ok=False)
+        removed_paths = manager.delete("validation", cfg_id, missing_ok=False, pipelines = request.app.state.manager.pipelines)
     except FileNotFoundError as e:
         raise HTTPException(status_code=404, detail=str(e))
     except ValueError as e:

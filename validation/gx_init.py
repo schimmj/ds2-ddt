@@ -1,7 +1,6 @@
 import os
 import shutil
 from typing import Dict
-from config import ConfigLoader, config_provider
 from config import ConfigProvider
 from utils.utils import topic_url_to_name
 import great_expectations as gx
@@ -52,7 +51,6 @@ class GXInitializer:
         self.context = gx.get_context(mode='file', project_root_dir=self.gx_root_dir)
 
     def _load_validation_config(self):
-        # config_loader = ConfigLoader(self.validation_config_dir)
         config_provider = ConfigProvider()
         
         # self.validation_config = config_loader.load_config()

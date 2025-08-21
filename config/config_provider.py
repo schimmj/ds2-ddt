@@ -1,5 +1,4 @@
 # config/config_provider.py
-from .config_loader import ConfigLoader
 from .config_manager import ConfigManager
 from config import config_manager
 
@@ -8,7 +7,6 @@ class ConfigProvider:
         self.reload()
 
     def reload(self):
-        loader = ConfigLoader()
         config_manager = ConfigManager()
         
         # self._cache = {

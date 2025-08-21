@@ -117,7 +117,7 @@ class ConfigManager:
 
     # ---------- delete ----------
     def delete(self, cfg_type: str, config_id: Optional[str] = None, *,
-               pattern: Optional[str] = None, missing_ok: bool = True) -> list[Path]:
+               pattern: Optional[str] = None, missing_ok: bool = True, pipelines: Dict[str, Any]) -> list[Path]:
         """
         Delete config files and return list of removed Paths.
 
@@ -152,9 +152,13 @@ class ConfigManager:
 
         if config_id:
             p = self._validation_path(config_id)
+            in_use = self._check_validation_in_use(config_id, pipelines)
             if p.exists():
-                p.unlink()
-                removed.append(p)
+                if not in_use:     
+                    p.unlink()
+                    removed.append(p)
+                else:
+                    raise RuntimeError(f"Cannot delete validation config '{config_id}' as it is currently in use by a pipeline.")
             elif not missing_ok:
                 raise FileNotFoundError(f"Validation config not found: {p}")
             return removed
@@ -169,3 +173,12 @@ class ConfigManager:
         if not removed and not missing_ok:
             raise FileNotFoundError(f"No validation files matched pattern '{pattern}' in {d}")
         return removed
+
+    def _check_validation_in_use(self, config_id: str, pipelines: Dict[str, Any]) -> bool:
+        """
+        Check if the validation config is currently in use by any pipeline.
+        """
+        for pipeline in pipelines.values():
+            if pipeline.validator.config_name.startswith(config_id):
+                return True
+        return False

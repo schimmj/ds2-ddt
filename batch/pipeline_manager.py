@@ -3,8 +3,6 @@ from curses import raw
 from typing import Any, Callable, Dict, Optional
 from threading import RLock
 from batch import BatchPipeline
-from config import config_loader, config_provider
-from config.config_loader import ConfigLoader
 from mqtt import MqttClient  # your existing MQTT adapter
 from config import ConfigProvider
 
@@ -108,6 +106,14 @@ class PipelineManager:
     def raw_topics(self):
         """List of all topics this manager knows about."""
         return list(self._pipelines.keys())
+    
+    @property
+    def pipelines(self) -> Dict[str, BatchPipeline]:
+        """
+        Expose the internal pipelines dict.
+        This is useful for other components that need to access pipelines directly.
+        """
+        return self._pipelines
     
 
     def get_pipeline(self, topic: str) -> BatchPipeline:

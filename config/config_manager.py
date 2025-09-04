@@ -158,7 +158,7 @@ class ConfigManager:
                     p.unlink()
                     removed.append(p)
                 else:
-                    raise RuntimeError(f"Cannot delete validation config '{config_id}' as it is currently in use by a pipeline.")
+                    raise RuntimeError(f"Cannot delete validation config '{config_id}' as it is currently in use by a mqtt pipeline.")
             elif not missing_ok:
                 raise FileNotFoundError(f"Validation config not found: {p}")
             return removed

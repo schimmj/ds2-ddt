@@ -2,8 +2,8 @@
 from fastapi import FastAPI, HTTPException, Query, Request, Path, Body
 from pydantic import BaseModel, Extra
 
-from batch.batch_pipeline import BatchPipeline
-from batch.pipeline_manager import PipelineManager
+from batch import BatchPipeline
+from batch import PipelineManager
 from tests.test_result_mqtt_pipeline import pipeline
 from typing import List, Literal, Optional, Dict, Any
 import pandas as pd
@@ -84,13 +84,11 @@ async def ingest_data_batch(
 
 
 
-@app.get("/configs", 
+@app.get("/configs/{cfg_type}", 
          summary="List configurations",
         description="Retrieve configurations filtered by kind. Use pagination via limit/offset.")
 async def get_configs(
-    cfg_type: Optional[Literal["mqtt", "validation"]] = Query(
-        None, alias="type", description="Filter to a specific config type"
-    )
+    cfg_type: Optional[Literal["mqtt", "validation"]] = Path(..., description="Filter to a specific config type")
 ):
     """
     Return the currently saved configurations from disk.
@@ -121,14 +119,14 @@ async def get_configs(
         # surface which file was malformed if available
         raise HTTPException(status_code=422, detail=f"Invalid JSON in config files: {e}")
     
-
-@app.post("/configs",
-          summary="Save a new configuration")
+@app.post("/configs/{cfg_type}")
+@app.post("/configs/{cfg_type}/{cfg_id}")
 async def ingest_config(
     request: Request,
-    cfg_type: Literal["mqtt", "validation"] = Query(..., alias="type", description="Type of configuration to save"),
-    cfg_id: Optional[str] = Query(None, alias="config_id", description="Optional ID for the configuration (required for validation)"),
-    payload: Dict[str, Any] = Body(..., description="Configuration JSON object.")):
+    cfg_type: Literal["mqtt", "validation"],
+    payload: Dict[str, Any] = Body(...),
+    cfg_id: str | None = None,   # <-- just a plain optional argument
+):
 
     config_manager = ConfigManager(base_path="config")
     

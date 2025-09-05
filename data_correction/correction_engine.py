@@ -69,12 +69,17 @@ class CorrectionEngine:
 
             strategy = self._rules[col][exp_idx].get("handler")
             unexpected_idx = res["result"]["unexpected_index_list"]
+            expectation = res["expectation_config"]["type"]
+            min = res["expectation_config"]["kwargs"].get("min_value")
+            max = res["expectation_config"]["kwargs"].get("max_value")
 
             if strategy and is_valid_strategy(strategy):
                 cleaned_df[col] = self._corrector.correct_column(
                     cleaned_df[col],
                     rows_to_correct=unexpected_idx,
-                    strategy_name=strategy
+                    strategy_name=strategy,
+                    min=min,
+                    max=max
                 )
             elif strategy == "RaiseAlarm":
                 alarm_events.append(res)  # is it necessary to put the whole result to an alarm?

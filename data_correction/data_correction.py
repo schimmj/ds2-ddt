@@ -11,16 +11,45 @@ class DataCorrection:
         """
    
 
-    def correct_column(self, column: pd.Series, rows_to_correct:dict, strategy_name:str):
+    def correct_column(
+        self, 
+        column: pd.Series, 
+        rows_to_correct: dict, 
+        strategy_name: str, 
+        min=None, 
+        max=None
+    ) -> pd.Series:
         """
         Correct a single column based on the given expectation result and the strategy to use for correction.
-        
-        """
+        If the correction result is a number, enforce min/max bounds.
 
+        Parameters
+        ----------
+        column : pd.Series
+            The column to correct.
+        rows_to_correct : dict
+            Indices that require correction.
+        strategy_name : str
+            Name of the correction strategy.
+        min : float | int | None
+            Lower bound for numeric corrections.
+        max : float | int | None
+            Upper bound for numeric corrections.
+        """
         strategy_cls: type[CorrectionStrategy] = get_strategy(strategy_name)
         strategy = strategy_cls()
         corrected_column = column.copy()
+
         for index in rows_to_correct:
-            corrected_column[index] = strategy.apply(index=index, neighbours=column)
+            value = strategy.apply(index=index, neighbours=column)
+
+            # Clip numeric values if min/max are provided
+            if isinstance(value, (int, float)):
+                if min is not None and value < min:
+                    value = min
+                if max is not None and value > max:
+                    value = max
+
+            corrected_column[index] = value
 
         return corrected_column

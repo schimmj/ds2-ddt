@@ -32,7 +32,7 @@ def main():
     # --- PipelineManager (wires pipelines into the MQTT client) ---
     manager = PipelineManager(
         cfg_path="./config",
-        mqtt_client=client
+        mqtt_client=None
     )
 
     # --- API server setup ---#

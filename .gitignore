@@ -19,3 +19,7 @@ validation/gx
 config/validations
 
 config/generated_mqtt_config.json
+
+
+.vscode/
+.idea/

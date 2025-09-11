@@ -27,6 +27,15 @@ package mqtt {
         +publish(topic, obj)
     }
 
+    class ResultPublisher {
+        +__init__(topic_cfg, publish, delay=1.0)
+        +emit(cleaned_df, raw_df)
+    }
+
+    class AlarmPublisher {
+        + __init__(topic_cfg, publish)
+        + emit(column, expectation_result, raw_df)
+    }
 
     MqttPublisher --> MqttClient : uses
 }
@@ -61,12 +70,15 @@ package "batch pipeline" {
 
     BatchPipeline --> DataQueue        : buffers
     BatchPipeline --> BatchValidator   : validates
-    BatchPipeline --> result_handler.ResultHandler : forwards
+    BatchPipeline --> data_correction.CorrectionEngine : corrects
+    
+    BatchPipeline --> mqtt.ResultPublisher : uses
+    BatchPipeline --> mqtt.AlarmPublisher  : uses
+
     PipelineManager o-- BatchPipeline    : holds  
 }
 
-ApiServer        --> PipelineManager : uses  
-MqttClient       --> PipelineManager : uses  
+ApiServer        --> BatchPipeline : calls   
 
 ' ─────────────── Validation bootstrap ────────────────────
 package validation {
@@ -82,28 +94,6 @@ package validation {
     end note
 }
 
-' ─────────────── Result handling / publish ───────────────
-package result_handler {
-    class ResultHandler {
-        +set_default_publisher(fn)
-        +__init__(topic, cfg=None, publish=None)
-        +handle(validation_results, df)
-    }
-
-    class ResultPublisher {
-        +__init__(topic_cfg, publish, delay=1.0)
-        +emit(cleaned_df, raw_df)
-    }
-
-    class AlarmPublisher {
-        + __init__(topic_cfg, publish)
-        + emit(column, expectation_result, raw_df)
-    }
-
-    ResultHandler --> ResultPublisher      : uses
-    ResultHandler --> AlarmPublisher       : uses
-    ResultHandler --> data_correction.CorrectionEngine : uses
-}
 
 ' ─────────────── Data-correction engine ───────────────────
 package data_correction {

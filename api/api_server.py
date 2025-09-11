@@ -53,15 +53,7 @@ async def ingest_data_batch(
         description="Array of records to process"
     ),
 ):
-    # manager: PipelineManager = request.app.state.manager
 
-    # try:
-    #     pipeline = manager.get_pipeline(topic)
-    # except KeyError:
-    #     raise HTTPException(
-    #         status_code=404, 
-    #         detail=f"No pipeline for topic '{topic}'"
-    #     )
     config_name = f"{config_id}_{topic}"
     pipeline = BatchPipeline(topic, config_name, batch_size=1) # batch size of 1 for synchronous processing irrelevant
 

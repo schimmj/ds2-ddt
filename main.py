@@ -3,9 +3,9 @@ Module for handling MQTT messages and processing them into queues.
 """
 import os
 import time
+from batch.batch_pipeline import BatchPipeline
 from mqtt import MqttClient, MqttPublisher 
 from dotenv import load_dotenv
-from result_handler import ResultHandler
 from validation import GXInitializer
 import paho.mqtt.client as mqtt
 import uvicorn
@@ -23,30 +23,37 @@ def main():
     gx_initializer = GXInitializer()
 
     # --- MQTT setup ---
+    client: MqttClient | None = None
     client = MqttClient(broker=BROKER, port=PORT)
 
-    # hook up your ResultHandler to publish back over MQTT
-    publisher = MqttPublisher(client)
-    ResultHandler.set_default_publisher(publisher.publish)
+    
 
-    # --- PipelineManager (wires pipelines into the MQTT client) ---
-    manager = PipelineManager(
-        cfg_path="./config",
-        mqtt_client=None
-    )
+    if  client and client._connected:
+        # hook up your ResultHandler to publish back over MQTT
+        publisher = MqttPublisher(client)
+        BatchPipeline.set_default_publisher(publisher.publish)
+
+        # --- PipelineManager (wires pipelines into the MQTT client) ---
+        manager = PipelineManager(
+            cfg_path="./config",
+            mqtt_client=client
+        )
+
+    else:
+        manager = None
 
     # --- API server setup ---#
     app.state.manager = manager
     app.state.gx = gx_initializer
 
-    # start listening into MQTT (non-blocking)
-    client.start()
+    
 
     # launch the HTTP server
     uvicorn.run(app, host="0.0.0.0", port=8000)
 
 
-
+    # start listening into MQTT (non-blocking)
+    client and client.start()
 
 
 if __name__ == "__main__":

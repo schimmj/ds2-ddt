@@ -20,7 +20,6 @@ class PipelineManager:
         self._lock  = RLock()
         self._mqtt_client = mqtt_client
         self._listeners : Dict[str, Callable[[str, dict], None]] = {}
-
         config_provider = ConfigProvider()
 
         self._apply_mqtt_config(config_provider.mqtt())

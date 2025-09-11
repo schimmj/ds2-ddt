@@ -29,11 +29,11 @@ class CorrectionEngine:
         self,
         topic: str,
         config_name: str,
-        cfg: ConfigProvider,
         corrector: DataCorrection
     ) -> None:
+        cfg_provider = ConfigProvider()
         config_id = config_name.removesuffix("_"+topic)
-        self._rules = cfg.validation()[config_id][topic]
+        self._rules = cfg_provider.validation()[config_id][topic]
         self._corrector = corrector
 
     # ------------------------------------------------------------------ #

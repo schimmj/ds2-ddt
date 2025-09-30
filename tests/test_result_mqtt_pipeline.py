@@ -7,7 +7,6 @@ import pandas as pd
 import pytest
 import json
 from mqtt import MqttPublisher
-from result_handler import ResultPublisher
 from datetime import datetime, timezone
 
 

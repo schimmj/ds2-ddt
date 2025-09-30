@@ -13,20 +13,25 @@ class MqttClient:
     
     
     def __init__(self, broker: str, port: int):
+        self.broker = broker
+        self.port = port
         self._client = mqtt.Client(CallbackAPIVersion.VERSION2)
         self._client.on_message = self._raw_on_message
         self._client.on_connect = self._on_connect
         self._client.on_disconnect = lambda *args: print("MQTT Client disconnected")
-        # self._client.on_publish = lambda *args: print("MQTT Client published")
         self._connected = False
-        self._client.connect(broker, port)
-        self._client.loop_start()
-        print(f"✔ MQTT Client connected to {broker}:{port}")
+        try:
+              self._client.connect(broker, port)
+              self._client.loop_start()
+        except Exception as e:
+                print(f"⚠️  MQTT connection to {broker}:{port}. \t Start the broker if you want to use MQTT.")
+                self._connected = False        
         self._listeners: List[Callable[[str, dict], None]] = []
 
     def _on_connect(self, client, userdata, flags, rc, *args):
         if rc == 0:
             self._connected = True
+            print(f"✔ MQTT Client connected to {self.broker}:{self.port}")
         else:
             print(f"✖ Failed to connect, rc={rc}")
             

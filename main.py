@@ -31,7 +31,7 @@ def main():
 
     
 
-    if  client and client._connected:
+    if  client:
         # hook up your ResultHandler to publish back over MQTT
         publisher = MqttPublisher(client)
         BatchPipeline.set_default_publisher(publisher.publish)

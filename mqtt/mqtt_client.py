@@ -37,6 +37,7 @@ class MqttClient:
             
             
             
+            
     # --- public transport API ------------------------------------------------
     def subscribe(self, topic: str) -> None:
         self._client.subscribe(topic)

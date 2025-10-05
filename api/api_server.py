@@ -4,7 +4,6 @@ from pydantic import BaseModel, Extra
 
 from batch import BatchPipeline
 from batch import PipelineManager
-from tests.test_result_mqtt_pipeline import pipeline
 from typing import List, Literal, Optional, Dict, Any
 import pandas as pd
 import json

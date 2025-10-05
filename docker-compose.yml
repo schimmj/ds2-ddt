@@ -26,7 +26,8 @@ services:
       - ./config:/app/config  # Mount config directory for manual edits
       - ./.env:/app/.env:ro # Mount .env file as read-only
     ports:
-      - "5000:5000"  # Expose any additional ports if needed
+      - "5000:5000"  # expose main application port for local testing
+      - "8000:8000"  # expose fastapi port for local testing
     networks:
       - app-network
 

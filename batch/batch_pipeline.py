@@ -4,7 +4,6 @@
 # batch_pipeline.py
 from typing import Callable
 
-from isort import Config
 from data_correction import DataCorrection, CorrectionEngine
 from .data_queue import DataQueue
 from .batch_validator import BatchValidator

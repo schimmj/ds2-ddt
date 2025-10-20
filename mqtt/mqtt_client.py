@@ -24,7 +24,7 @@ class MqttClient:
               self._client.connect(broker, port)
               self._client.loop_start()
         except Exception as e:
-                print(f"⚠️  MQTT connection to {broker}:{port}. \t Start the broker if you want to use MQTT.")
+                print(f"⚠️  MQTT connection to {broker}:{port} failed. \t Start the broker if you want to use MQTT.")
                 self._connected = False        
         self._listeners: List[Callable[[str, dict], None]] = []
 

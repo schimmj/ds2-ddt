@@ -10,7 +10,7 @@ __pycache__/
 
 
 # Ignore demo_data
-demo_data/
+# demo_data/
 
 #Ignore gx context
 validation/gx
